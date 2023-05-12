@@ -1,0 +1,42 @@
+{
+  "name": "rlhfdashboard",
+  "version": "1.1.0",
+  "description": "Dashboard with beautiful UI in JS",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.deloitte.rlhfdashboard",
+    "productName": "rlhfdashboard",
+    "directories": {
+      "output": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "runAfterFinish": true
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^24.2.0",
+    "electron-builder": "^23.6.0"
+  }
+}

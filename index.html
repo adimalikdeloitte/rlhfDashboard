@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AWS RLHF</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ"
+      crossorigin="anonymous"
+    />
+
+    <link href="styles.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  </head>
+  <body>
+    <!-- Section 1 : Navigation Bar start -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">AWS RLHF</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarSupportedContent"
+          aria-controls="navbarSupportedContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Annotation View</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Stage One Review</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Stage Two Review</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Section 1 : Navigation Bar end -->
+
+    <!-- Section 2 : Main Body start -->
+    <div class="container">
+      <div id="fileSelection" class="mt-5">
+        <div class="row">
+          <div class="col-6">Choose a file to work upon :</div>
+          <div class="col-6">
+            <button id="open-file-button" class="btn btn-dark">
+              Open Text File
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="contents" style="display: none" class="mt-5">
+        <p>You are working on the file : <strong id="fileName"></strong></p>
+
+        <p>Thread ID : <strong id="threadId"></strong></p>
+
+        <section id="promptSection">
+          <hr />
+
+          <h4 class="mb-4">Prompts</h4>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <div
+                id="pickContainer"
+                ondrop="drop(event)"
+                ondragover="allowDrop(event)"
+              >
+                <div
+                  class="textarea-wrapper"
+                  draggable="true"
+                  ondragstart="dragStart(event)"
+                >
+                  <textarea
+                    placeholder="Prompt 1"
+                    class="form-control mb-3"
+                    id="promptValue1"
+                    readonly
+                  ></textarea>
+                </div>
+
+                <div
+                  class="textarea-wrapper"
+                  draggable="true"
+                  ondragstart="dragStart(event)"
+                >
+                  <textarea
+                    placeholder="Prompt 2"
+                    class="form-control mb-3"
+                    id="promptValue2"
+                    readonly
+                  ></textarea>
+                </div>
+
+                <div
+                  class="textarea-wrapper"
+                  draggable="true"
+                  ondragstart="dragStart(event)"
+                >
+                  <textarea
+                    placeholder="Prompt 3"
+                    class="form-control mb-3"
+                    id="promptValue3"
+                    readonly
+                  ></textarea>
+                </div>
+
+                <div
+                  class="textarea-wrapper"
+                  draggable="true"
+                  ondragstart="dragStart(event)"
+                >
+                  <textarea
+                    placeholder="Prompt 4"
+                    class="form-control mb-3"
+                    id="promptValue4"
+                    readonly
+                  ></textarea>
+                </div>
+
+                <div
+                  class="textarea-wrapper"
+                  draggable="true"
+                  ondragstart="dragStart(event)"
+                >
+                  <textarea
+                    placeholder="Prompt 5"
+                    class="form-control mb-3"
+                    id="promptValue5"
+                    readonly
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <strong>Is the prompt informative enough ?</strong>
+              <div class="form-check">
+                <input
+                  onclick="promptSelected(`Yes`)"
+                  class="form-check-input"
+                  type="radio"
+                  name="promptRadio"
+                  id="promptRadio1"
+                />
+                <label class="form-check-label" for="promptRadio1"> Yes </label>
+              </div>
+
+              <div class="form-check">
+                <input
+                  onclick="promptSelected(`No`)"
+                  class="form-check-input"
+                  type="radio"
+                  name="promptRadio"
+                  id="promptRadio2"
+                />
+                <label class="form-check-label" for="promptRadio2"> No </label>
+              </div>
+
+              <div
+                id="dropContainer"
+                class="dragndropcontainer card card-body text-center"
+                ondrop="drop(event)"
+                ondragover="allowDrop(event)"
+              >
+                <strong class="mt-3">
+                  Drag and drop the correct prompt in this box
+                </strong>
+              </div>
+
+              <div id="revisedPromptContainer" style="display: none">
+                <textarea
+                  id="revisedPrompt"
+                  placeholder="Enter your revised prompt !"
+                  style="padding: 10px; border-radius: 5px; margin-top: 20px"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: right">
+            <button
+              id="submitPromptButton"
+              style="display: none"
+              class="btn btn-dark"
+              onclick="submitPrompt()"
+            >
+              Update Revised Prompt
+            </button>
+          </div>
+
+          <div class="p-3 m-3" style="border: 1px solid gray">
+            Revised prompt :
+            <strong id="revisedPromptInFile"></strong>
+          </div>
+
+          <hr />
+        </section>
+
+        <section id="codeAndReasoningSection">
+          <hr />
+
+          <div class="row">
+            <div class="col-4">
+              <h4 class="mb-4">Reasoning</h4>
+              <grammarly-editor-plugin>
+                <textarea
+                  id="reasoning"
+                  placeholder="Reasoning"
+                  rows="15"
+                  class="p-3"
+                  style="border-radius: 5px"
+                ></textarea>
+              </grammarly-editor-plugin>
+            </div>
+
+            <div class="col-8">
+              <h4 class="mb-4">Code</h4>
+              <button
+                class="btn btn-light w-100"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#originalCodeCollapseId"
+                aria-expanded="false"
+                aria-controls="originalCodeCollapseId"
+              >
+                Original Code
+              </button>
+
+              <div class="collapse" id="originalCodeCollapseId">
+                <div class="card card-body mt-3">
+                  <!-- <pre id="originalCode"></pre> -->
+                  <div id="originalCodeEditor"></div>
+                </div>
+              </div>
+
+              <br />
+              <br />
+
+              <button
+                class="btn btn-light w-100 mb-3"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#revisedCodeCollapseId"
+                aria-expanded="false"
+                aria-controls="revisedCodeCollapseId"
+              >
+                Revised Code
+              </button>
+
+              <div class="collapse" id="revisedCodeCollapseId">
+                <!-- <textarea
+                  class="form-control mt-3 mb-3"
+                  placeholder="Revised Code"
+                  id="revisedCode"
+                  rows="20"
+                ></textarea> -->
+
+                <div class="card card-body mt-3">
+                  <div id="revisedCodeEditor"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-4 mb-4">
+            <div class="col-4">
+              <div style="text-align: right">
+                <button
+                  id="submitReasoningButton"
+                  class="btn btn-dark"
+                  onclick="submitReasoning()"
+                >
+                  Update Reasoning
+                </button>
+              </div>
+            </div>
+            <div class="col-8">
+              <div style="text-align: right">
+                <button
+                  id="submitCodeButton"
+                  class="btn btn-dark"
+                  onclick="submitCode()"
+                >
+                  Update Code
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+        </section>
+
+        <section id="explanationSection">
+          <hr />
+
+          <h4 class="mb-4">Explanation</h4>
+          <grammarly-editor-plugin>
+            <textarea
+              id="explanation"
+              placeholder="Explanation"
+              rows="10"
+              class="p-3"
+              style="border-radius: 5px"
+            ></textarea>
+          </grammarly-editor-plugin>
+
+          <div style="text-align: right">
+            <button
+              id="submitExplanationButton"
+              class="btn btn-dark"
+              onclick="submitExplanation()"
+            >
+              Update Explanation
+            </button>
+          </div>
+
+          <hr />
+        </section>
+
+        <section id="codeQuestions">
+          <hr />
+
+          <h4 class="mb-3">Code Questions</h4>
+
+          <div class="mb-4">
+            Does the code perform the task described in the prompt ?
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet1"
+                id="codeRadio1"
+              />
+              <label class="form-check-label" for="codeRadio1"> Yes </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet1"
+                id="codeRadio2"
+              />
+              <label class="form-check-label" for="codeRadio2"> No </label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            Does the code contains necessary exception caught / error handling ?
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet2"
+                id="codeRadio3"
+              />
+              <label class="form-check-label" for="codeRadio3"> Yes </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet2"
+                id="codeRadio4"
+              />
+              <label class="form-check-label" for="codeRadio4"> No </label>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            Is the code well documented: rate on a scale of 1-4.
+
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet3"
+                id="codeRadio5"
+              />
+              <label class="form-check-label" for="codeRadio5">
+                1. means code is not documented at all
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet3"
+                id="codeRadio6"
+              />
+              <label class="form-check-label" for="codeRadio6">
+                2. means code contain certain comments, but not enough
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet3"
+                id="codeRadio7"
+              />
+              <label class="form-check-label" for="codeRadio7">
+                3. means code is excessively documented
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="codeRadioSet3"
+                id="codeRadio8"
+              />
+              <label class="form-check-label" for="codeRadio8">
+                4. means code is well-documented (well-commented , indentation ,
+                proper logger statements )
+              </label>
+            </div>
+          </div>
+
+          <div style="text-align: right">
+            <button
+              id="submitCodeQuestionsButton"
+              class="btn btn-dark"
+              onclick="submitCodeQuestions()"
+            >
+              Update Code Questions
+            </button>
+          </div>
+
+          <hr />
+        </section>
+      </div>
+    </div>
+
+    <!-- Section 2 : Main Body end -->
+
+    <script src="renderer.js"></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
+      integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js"
+      integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@grammarly/editor-sdk?clientId=client_X56RR7GhychN7xzHB5Err1"></script>
+  </body>
+</html>
