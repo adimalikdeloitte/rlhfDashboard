@@ -14,3 +14,7 @@
 
 1. Integrated code editor
 2. Integrated Grammarly for grammar correction
+
+## v1.3.0
+
+1. Different sections for SOF editing and COT editing
