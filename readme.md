@@ -9,3 +9,8 @@
 # v1.1.0
 
 1. Brings coding and reasoning section side by side
+
+#v1.2.0
+
+1. Integrated code editor
+2. Integrated Grammarly for grammar correction
