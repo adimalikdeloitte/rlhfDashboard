@@ -51,17 +51,324 @@
     <!-- Section 2 : Main Body start -->
     <div class="container">
       <div id="fileSelection" class="mt-5">
-        <div class="row">
+        <div class="text-center">
+          <h1>Welcome to AWS RLHF Dashboard</h1>
+        </div>
+
+        <h4 class="mt-5">Please choose configuration :</h4>
+
+        <div class="mt-5">
+          <strong>Select a task</strong>
+          <div class="form-check">
+            <input
+              onclick="onTaskChoice(`COT`)"
+              class="form-check-input"
+              type="radio"
+              name="taskChoice"
+              id="taskChoiceCOT"
+            />
+            <label class="form-check-label" for="taskChoiceCOT"> COT </label>
+          </div>
+          <div class="form-check">
+            <input
+              onclick="onTaskChoice(`SOF`)"
+              class="form-check-input"
+              type="radio"
+              name="taskChoice"
+              id="taskChoiceSOF"
+            />
+            <label class="form-check-label" for="taskChoiceSOF"> SOF </label>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <strong>Select a language</strong>
+          <div class="form-check">
+            <input
+              onclick="onLanguageChoice(`Java`)"
+              class="form-check-input"
+              type="radio"
+              name="languageChoice"
+              id="languageChoiceJava"
+            />
+            <label class="form-check-label" for="languageChoiceJava">
+              Java
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              onclick="onLanguageChoice(`Python`)"
+              class="form-check-input"
+              type="radio"
+              name="languageChoice"
+              id="languageChoicePython"
+            />
+            <label class="form-check-label" for="languageChoicePython">
+              Python
+            </label>
+          </div>
+          <div class="form-check">
+            <input
+              onclick="onLanguageChoice(`JavaScript`)"
+              class="form-check-input"
+              type="radio"
+              name="languageChoice"
+              id="languageChoiceJavascript"
+            />
+            <label class="form-check-label" for="languageChoiceJavascript">
+              JavaScript
+            </label>
+          </div>
+        </div>
+
+        <div id="filePicker" class="row mt-5 text-center" style="display: none">
           <div class="col-6">Choose a file to work upon :</div>
           <div class="col-6">
             <button id="open-file-button" class="btn btn-dark">
               Open Text File
             </button>
           </div>
+
+          <div class="text-center mt-5">
+            <strong
+              >* Only choose a file of chosen task and language to avoid any
+              error in opening the file</strong
+            >
+          </div>
         </div>
       </div>
 
-      <div id="contents" style="display: none" class="mt-5">
+      <div id="content-SOF" style="display: none" class="mt-5">
+        <p>You are working on the file : <strong id="sofFileName"></strong></p>
+
+        <p>Thread ID : <strong id="sofThreadId"></strong></p>
+
+        <p>
+          Link 🔗 :
+          <strong style="cursor: pointer; color: blue" id="sofLink"></strong>
+        </p>
+
+        <p>Title : <strong id="sofTitle"></strong></p>
+
+        <section id="questionAndAnswerQuestion">
+          <hr />
+
+          <div class="row">
+            <div class="col-6">
+              <h4 class="mb-4">Question</h4>
+
+              <textarea
+                id="sofQuestion"
+                placeholder="Question from Stack Overflow"
+                rows="15"
+                class="p-3"
+                style="border-radius: 5px"
+                readonly
+              ></textarea>
+            </div>
+
+            <div class="col-6">
+              <h4 class="mb-4">Answer</h4>
+
+              <textarea
+                id="sofAnswer"
+                placeholder="Answer from Stack Overflow"
+                rows="15"
+                class="p-3"
+                style="border-radius: 5px"
+                readonly
+              ></textarea>
+            </div>
+          </div>
+
+          <hr />
+        </section>
+
+        <section id="desiredQuestionAndAnswer">
+          <hr />
+
+          <div class="row">
+            <div class="col-6">
+              <h4 class="mb-4">Desired Question</h4>
+
+              <grammarly-editor-plugin>
+                <textarea
+                  id="desiredSofQuestion"
+                  placeholder="You desired question goes here ..."
+                  rows="15"
+                  class="p-3"
+                  style="border-radius: 5px"
+                ></textarea>
+              </grammarly-editor-plugin>
+            </div>
+
+            <div class="col-6">
+              <h4 class="mb-4">Desired Answer</h4>
+
+              <grammarly-editor-plugin>
+                <textarea
+                  id="desiredSofAnswer"
+                  placeholder="You desired answer goes here ..."
+                  rows="15"
+                  class="p-3"
+                  style="border-radius: 5px"
+                ></textarea>
+              </grammarly-editor-plugin>
+            </div>
+          </div>
+
+          <div class="row mt-4 mb-4">
+            <div class="col-6">
+              <div style="text-align: right">
+                <button
+                  id="submitDesiredQuestion"
+                  class="btn btn-dark"
+                  onclick="submitDesiredQuestion()"
+                >
+                  Update Desired Question
+                </button>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="text-align: right">
+                <button
+                  id="submitDesiredAnswer"
+                  class="btn btn-dark"
+                  onclick="submitDesiredAnswer()"
+                >
+                  Update Desired Answer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+        </section>
+
+        <section id="NotesAndQuestions">
+          <hr />
+
+          <div class="row">
+            <div class="col-6">
+              <h4 class="mb-4">Info Questions</h4>
+
+              <div class="mb-4">
+                Do you want to reject this annotation
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet1"
+                    id="infoRadio1"
+                  />
+                  <label class="form-check-label" for="infoRadio1"> Yes </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet1"
+                    id="infoRadio2"
+                  />
+                  <label class="form-check-label" for="infoRadio2"> No </label>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                Available Task categories
+
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet2"
+                    id="infoRadio3"
+                  />
+                  <label class="form-check-label" for="infoRadio3">
+                    1. Question Answering
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet2"
+                    id="infoRadio4"
+                  />
+                  <label class="form-check-label" for="infoRadio4">
+                    2. Debug/Refine/Bugfix
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet2"
+                    id="infoRadio5"
+                  />
+                  <label class="form-check-label" for="infoRadio5">
+                    3. Summarize/Explain
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet2"
+                    id="infoRadio6"
+                  />
+                  <label class="form-check-label" for="infoRadio6">
+                    4. Rewrite/Translate
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="radio"
+                    name="infoQuestionSet2"
+                    id="infoRadio7"
+                  />
+                  <label class="form-check-label" for="infoRadio7">
+                    5. Others
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <h4 class="mb-4">Notes</h4>
+
+              <textarea
+                id="notes"
+                placeholder="Notes"
+                rows="15"
+                class="p-3"
+                style="border-radius: 5px"
+                readonly
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="row mt-4 mb-4">
+            <div class="col-6">
+              <div style="text-align: right">
+                <button
+                  id="submitAdditionalInfoButton"
+                  class="btn btn-dark"
+                  onclick="submitAdditionalInfo()"
+                >
+                  Update Additional Info
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+        </section>
+      </div>
+
+      <div id="content-COT" style="display: none" class="mt-5">
         <p>You are working on the file : <strong id="fileName"></strong></p>
 
         <p>Thread ID : <strong id="threadId"></strong></p>

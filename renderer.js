@@ -30,10 +30,14 @@ let info,
   reasoning,
   explanation,
   originalCodeEditor,
-  revisedCodeEditor;
+  revisedCodeEditor,
+  taskChoice = "",
+  languageChoice = "",
+  sofDesiredQuestion,
+  sofDesiredAnswer;
 
-ipcRenderer.on("file-data", (event, data) => {
-  document.getElementById("contents").style.display = "block";
+function workOnCOT(data) {
+  document.getElementById("content-COT").style.display = "block";
   document.getElementById("fileSelection").style.display = "none";
 
   info = getSection(
@@ -100,20 +104,24 @@ ipcRenderer.on("file-data", (event, data) => {
 
   if (questionsJson.questions[1].answer == "1") {
     document.getElementById("codeRadio1").checked = true;
-  } else if (questionsJson.questions[0].answer == "2") {
+  } else if (questionsJson.questions[1].answer == "2") {
     document.getElementById("codeRadio2").checked = true;
   }
 
   if (questionsJson.questions[2].answer == "1") {
     document.getElementById("codeRadio3").checked = true;
-  } else if (questionsJson.questions[0].answer == "2") {
+  } else if (questionsJson.questions[2].answer == "2") {
     document.getElementById("codeRadio4").checked = true;
   }
 
   if (questionsJson.questions[3].answer == "1") {
     document.getElementById("codeRadio5").checked = true;
-  } else if (questionsJson.questions[0].answer == "2") {
+  } else if (questionsJson.questions[3].answer == "2") {
     document.getElementById("codeRadio6").checked = true;
+  } else if (questionsJson.questions[3].answer == "3") {
+    document.getElementById("codeRadio7").checked = true;
+  } else if (questionsJson.questions[3].answer == "4") {
+    document.getElementById("codeRadio8").checked = true;
   }
 
   for (let i = 0; i < infoJson.prompt.length; i++) {
@@ -124,14 +132,116 @@ ipcRenderer.on("file-data", (event, data) => {
 
   originalCodeEditor = ace.edit("originalCodeEditor");
   originalCodeEditor.setTheme("ace/theme/monokai");
-  originalCodeEditor.session.setMode("ace/mode/javascript");
+  originalCodeEditor.session.setMode(
+    "ace/mode/" + languageChoice.toLowerCase()
+  );
   originalCodeEditor.setValue(code);
   originalCodeEditor.setOption("readOnly", true);
 
   revisedCodeEditor = ace.edit("revisedCodeEditor");
   revisedCodeEditor.setTheme("ace/theme/monokai");
-  revisedCodeEditor.session.setMode("ace/mode/javascript");
+  revisedCodeEditor.session.setMode("ace/mode/" + languageChoice.toLowerCase());
   revisedCodeEditor.setValue(revisedCode);
+}
+
+function workOnSOF(data) {
+  document.getElementById("content-SOF").style.display = "block";
+  document.getElementById("fileSelection").style.display = "none";
+
+  info = getSection(
+    data.data,
+    "====================Info Start============================",
+    "====================Info End===================================="
+  );
+
+  const notes = getSection(
+    data.data,
+    "====================Notes Start============================",
+    "====================Notes End===================================="
+  );
+
+  const title = getSection(
+    data.data,
+    "====================Title Start====================================",
+    "====================Title End===================================="
+  );
+
+  const sofQuestion = getSection(
+    data.data,
+    "====================Question Start====================================",
+    "====================Question End===================================="
+  );
+
+  const sofAnswer = getSection(
+    data.data,
+    "====================Answer Start====================================",
+    "====================Answer End===================================="
+  );
+
+  questions = getSection(
+    data.data,
+    "====================Additional Info Start====================================",
+    "====================Additional Info End===================================="
+  );
+
+  desiredSofQuestion = getSection(
+    data.data,
+    "====================Desired Question Start====================================",
+    "====================Desired Question End===================================="
+  );
+
+  desiredSofAnswer = getSection(
+    data.data,
+    "====================Desired Answer Start====================================",
+    "====================Desired Answer End===================================="
+  );
+
+  infoJson = JSON.parse(info);
+  questionsJson = JSON.parse(questions);
+
+  document.getElementById("sofFileName").innerText = data.fileName;
+  document.getElementById("sofThreadId").innerText = infoJson.id;
+  document.getElementById("sofTitle").innerText = title;
+  document.getElementById("sofLink").innerText = infoJson.link;
+
+  document.getElementById("sofLink").addEventListener("click", () => {
+    window.open(infoJson.link, "_blank");
+  });
+
+  document.getElementById("sofQuestion").value = sofQuestion;
+  document.getElementById("sofAnswer").value = sofAnswer;
+  document.getElementById("desiredSofQuestion").value = desiredSofQuestion;
+  document.getElementById("desiredSofAnswer").value = desiredSofAnswer;
+
+  document.getElementById("notes").value = notes;
+
+  if (questionsJson[`Do you want to reject this annotation`].answer == "1") {
+    document.getElementById("infoRadio1").checked = true;
+  } else if (
+    questionsJson[`Do you want to reject this annotation`].answer == "2"
+  ) {
+    document.getElementById("infoRadio2").checked = true;
+  }
+
+  if (questionsJson[`Available Task categories`].answer == "1") {
+    document.getElementById("infoRadio3").checked = true;
+  } else if (questionsJson[`Available Task categories`].answer == "2") {
+    document.getElementById("infoRadio4").checked = true;
+  } else if (questionsJson[`Available Task categories`].answer == "3") {
+    document.getElementById("infoRadio5").checked = true;
+  } else if (questionsJson[`Available Task categories`].answer == "4") {
+    document.getElementById("infoRadio6").checked = true;
+  } else if (questionsJson[`Available Task categories`].answer == "5") {
+    document.getElementById("infoRadio7").checked = true;
+  }
+}
+
+ipcRenderer.on("file-data", (event, data) => {
+  if (taskChoice === "COT") {
+    workOnCOT(data);
+  } else if (taskChoice === "SOF") {
+    workOnSOF(data);
+  }
 });
 
 function promptSelected(optionSelected) {
@@ -255,7 +365,7 @@ function submitReasoning() {
 }
 
 function submitExplanation() {
-  // get the reasoning
+  // get the explanation
   explanation = document.getElementById("explanation").value;
 
   // write in the text file
@@ -265,6 +375,66 @@ function submitExplanation() {
       "=======================================Explanation Start===============================================",
     endDelimiter:
       "======================================= Explanation End=================================================",
+  });
+}
+
+function submitDesiredQuestion() {
+  // get the question
+  desiredSofQuestion = document.getElementById("desiredSofQuestion").value;
+
+  // write in the text file
+  ipcRenderer.send("set-section", {
+    newText: desiredSofQuestion,
+    startDelimiter:
+      "====================Desired Question Start====================================",
+    endDelimiter:
+      "====================Desired Question End====================================",
+  });
+}
+
+function submitDesiredAnswer() {
+  // get the answer
+  desiredSofAnswer = document.getElementById("desiredSofAnswer").value;
+
+  // write in the text file
+  ipcRenderer.send("set-section", {
+    newText: desiredSofAnswer,
+    startDelimiter:
+      "====================Desired Answer Start====================================",
+    endDelimiter:
+      "====================Desired Answer End====================================",
+  });
+}
+
+function submitAdditionalInfo() {
+  // check additional info questions
+  if (document.getElementById("infoRadio1").checked) {
+    questionsJson[`Do you want to reject this annotation`].answer = "1";
+  } else if (document.getElementById("infoRadio2").checked) {
+    questionsJson[`Do you want to reject this annotation`].answer = "2";
+  }
+
+  if (document.getElementById("infoRadio3").checked) {
+    questionsJson[`Available Task categories`].answer = "1";
+  } else if (document.getElementById("infoRadio4").checked) {
+    questionsJson[`Available Task categories`].answer = "2";
+  } else if (document.getElementById("infoRadio5").checked) {
+    questionsJson[`Available Task categories`].answer = "3";
+  } else if (document.getElementById("infoRadio6").checked) {
+    questionsJson[`Available Task categories`].answer = "4";
+  } else if (document.getElementById("infoRadio7").checked) {
+    questionsJson[`Available Task categories`].answer = "5";
+  }
+
+  let revisedQuestions = JSON.stringify(questionsJson, null, 4);
+  console.log(revisedQuestions);
+
+  ipcRenderer.send("set-section", {
+    newText: revisedQuestions,
+    startDelimiter:
+      "====================Additional Info Start====================================",
+    endDelimiter:
+      "====================Additional Info End====================================",
   });
 }
 
@@ -314,3 +484,19 @@ function getTextareasInContainer(containerId) {
 
 // const dropContainerTextareas = getTextareasInContainer("dropContainer");
 // console.log("Textareas in Container 2:", dropContainerTextareas);
+
+function onTaskChoice(tc) {
+  taskChoice = tc;
+
+  if (languageChoice != "") {
+    document.getElementById("filePicker").removeAttribute("style");
+  }
+}
+
+function onLanguageChoice(lc) {
+  languageChoice = lc;
+
+  if (taskChoice != "") {
+    document.getElementById("filePicker").removeAttribute("style");
+  }
+}
