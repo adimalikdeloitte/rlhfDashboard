@@ -6,11 +6,11 @@
 2. Provide 4 sections in a good UI - Prompt, Code, Reasoning, Explanation
 3. Each section contains a button which saves (writes) the changes to the original text file
 
-# v1.1.0
+## v1.1.0
 
 1. Brings coding and reasoning section side by side
 
-# v1.2.0
+## v1.2.0
 
 1. Integrated code editor
 2. Integrated Grammarly for grammar correction
