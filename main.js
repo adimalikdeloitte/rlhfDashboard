@@ -29,7 +29,7 @@ function createWindow() {
       .then((result) => {
         if (!result.canceled && result.filePaths.length > 0) {
           currFilePath = result.filePaths[0];
-          fs.readFile(result.filePaths[0], "utf-8", (err, data) => {
+          fs.readFile(result.filePaths[0], "latin1", (err, data) => {
             if (err) {
               console.error("An error occurred while reading the file:", err);
               return;
@@ -52,7 +52,7 @@ function createWindow() {
   ipcMain.on("set-section", (event, message) => {
     const { newText, startDelimiter, endDelimiter } = message;
 
-    fs.readFile(currFilePath, "utf8", (err, data) => {
+    fs.readFile(currFilePath, "latin1", (err, data) => {
       if (err) {
         console.error("Error reading file:", err);
         return;
@@ -73,7 +73,7 @@ function createWindow() {
         "\n\n" +
         data.slice(endIndex);
 
-      fs.writeFile(currFilePath, updatedData, "utf8", (err) => {
+      fs.writeFile(currFilePath, updatedData, "latin1", (err) => {
         if (err) {
           console.error("Error writing file:", err);
           return;
