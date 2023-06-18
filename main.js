@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const fs = require("fs");
+const log = require("electron-log");
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -80,6 +81,50 @@ function createWindow() {
         }
         console.log("File updated successfully");
       });
+    });
+  });
+
+  function objectToCsvRow(obj) {
+    const values = Object.values(obj);
+    return values.map((value) => `"${value}"`).join(",") + "\n";
+  }
+
+  ipcMain.on("writeLogs", (event, data) => {
+    console.log(data);
+    const today = new Date();
+    const filePath =
+      `C:\\Users\\${
+        data[0].annotatorEmail.match(/^([^@]*)@/)[1]
+      }\\Deloitte (O365D)\\` +
+      "RLHF UAT - General\\" +
+      `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}-${
+        data[0].languageChoice
+      }.csv`;
+
+    // const filePath = "data.csv";
+    const headers =
+      "Timestamp,POD Number,File Name,Annotator Email,Error Percentage,Language\n";
+
+    // Check if the CSV file exists
+    const fileExists = fs.existsSync(filePath);
+
+    // Determine the content to be appended
+    let csvContent = "";
+    if (!fileExists) {
+      csvContent += headers;
+    }
+    data.forEach((obj) => {
+      csvContent += objectToCsvRow(obj);
+    });
+
+    fs.appendFile(filePath, csvContent, "utf8", (err) => {
+      if (err) {
+        console.error("Error creating CSV file:", err);
+        log.error(err);
+      } else {
+        console.log("CSV file created successfully.");
+        log.info("CSV file created successfully.");
+      }
     });
   });
 }

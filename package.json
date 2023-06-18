@@ -1,6 +1,6 @@
 {
   "name": "rlhfdashboard",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "description": "Dashboard with beautiful UI in JS",
   "main": "main.js",
   "scripts": {
@@ -15,15 +15,6 @@
       "output": "build"
     },
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
-        }
-      ],
       "icon": "icons/icon.ico"
     },
     "nsis": {
@@ -38,5 +29,8 @@
   "devDependencies": {
     "electron": "^24.2.0",
     "electron-builder": "^23.6.0"
+  },
+  "dependencies": {
+    "electron-log": "^4.4.8"
   }
 }

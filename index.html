@@ -15,6 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
   </head>
   <body>
+    <div id="alertContainer" class="container mt-4"></div>
+
     <!-- Section 1 : Navigation Bar start -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
@@ -24,6 +26,14 @@
           class="navbar-brand"
         >
           AWS RLHF
+        </button>
+
+        <button
+          style="border: none"
+          onclick="location.reload()"
+          class="navbar-brand"
+        >
+          < Back to home
         </button>
       </div>
     </nav>
@@ -43,7 +53,7 @@
           <strong>Select a task</strong>
           <div class="form-check">
             <input
-              onclick="onTaskChoice(`COT`)"
+              onclick="onConfigChoice(`task`,`COT`)"
               class="form-check-input"
               type="radio"
               name="taskChoice"
@@ -53,7 +63,7 @@
           </div>
           <div class="form-check">
             <input
-              onclick="onTaskChoice(`SOF`)"
+              onclick="onConfigChoice(`task`,`SOF`)"
               class="form-check-input"
               type="radio"
               name="taskChoice"
@@ -67,7 +77,7 @@
           <strong>Select a language</strong>
           <div class="form-check">
             <input
-              onclick="onLanguageChoice(`Java`)"
+              onclick="onConfigChoice(`language`,`Java`)"
               class="form-check-input"
               type="radio"
               name="languageChoice"
@@ -79,7 +89,7 @@
           </div>
           <div class="form-check">
             <input
-              onclick="onLanguageChoice(`Python`)"
+              onclick="onConfigChoice(`language`,`Python`)"
               class="form-check-input"
               type="radio"
               name="languageChoice"
@@ -91,7 +101,7 @@
           </div>
           <div class="form-check">
             <input
-              onclick="onLanguageChoice(`JavaScript`)"
+              onclick="onConfigChoice(`language`,`JavaScript`)"
               class="form-check-input"
               type="radio"
               name="languageChoice"
@@ -101,6 +111,26 @@
               JavaScript
             </label>
           </div>
+        </div>
+
+        <div class="mt-5">
+          <label for="annotatorEmail">Email ID :</label>
+          <input
+            id="annotatorEmail"
+            placeholder="Enter you email ID"
+            type="text"
+            value=""
+            oninput="onConfigChoice(`annotatorEmail`, undefined)"
+          />
+
+          <label for="podNumber">POD Number :</label>
+          <input
+            id="podNumber"
+            placeholder="Enter your POD Number"
+            type="number"
+            value=""
+            oninput="onConfigChoice(`podNumber`, undefined)"
+          />
         </div>
 
         <div id="filePicker" class="row mt-5 text-center" style="display: none">
@@ -121,16 +151,28 @@
       </div>
 
       <div id="content-SOF" style="display: none" class="mt-5">
-        <p>You are working on the file : <strong id="sofFileName"></strong></p>
+        <div class="row align-items-center">
+          <div class="col-8">
+            <p>
+              You are working on the file : <strong id="sofFileName"></strong>
+            </p>
 
-        <p>Thread ID : <strong id="sofThreadId"></strong></p>
+            <p>Thread ID : <strong id="sofThreadId"></strong></p>
 
-        <p>
-          Stackoverflow link :
-          <strong style="cursor: pointer; color: blue" id="sofLink"></strong>
-        </p>
+            <p>
+              Stackoverflow link :
+              <strong
+                style="cursor: pointer; color: blue"
+                id="sofLink"
+              ></strong>
+            </p>
 
-        <p>Title : <strong id="sofTitle"></strong></p>
+            <p>Title : <strong id="sofTitle"></strong></p>
+          </div>
+          <div class="col-4">
+            <button id="compilerLink" class="btn btn-dark">Open IDE</button>
+          </div>
+        </div>
 
         <section id="questionAndAnswerQuestion">
           <hr />
@@ -227,12 +269,25 @@
           <hr />
         </section>
 
-        <section id="NotesAndQuestions">
+        <section id="ChecksAndQuestions">
           <hr />
 
           <div class="row">
             <div class="col-6">
-              <h4 class="mb-4">Info Questions</h4>
+              <div class="row">
+                <div class="col-6">
+                  <h4 class="mb-4">Info Questions</h4>
+                </div>
+                <div class="col-6" style="text-align: right">
+                  <button
+                    id="submitAdditionalInfoButton"
+                    class="btn btn-dark"
+                    onclick="submitAdditionalInfo()"
+                  >
+                    Update Additional Info
+                  </button>
+                </div>
+              </div>
 
               <div class="mb-4">
                 Do you want to reject this annotation
@@ -319,30 +374,52 @@
             </div>
 
             <div class="col-6">
-              <h4 class="mb-4">Notes</h4>
-
-              <textarea
-                id="notes"
-                placeholder="Notes"
-                rows="15"
-                class="p-3"
-                style="border-radius: 5px"
-                readonly
-              ></textarea>
-            </div>
-          </div>
-
-          <div class="row mt-4 mb-4">
-            <div class="col-6">
-              <div style="text-align: right">
-                <button
-                  id="submitAdditionalInfoButton"
-                  class="btn btn-dark"
-                  onclick="submitAdditionalInfo()"
-                >
-                  Update Additional Info
-                </button>
+              <div class="row">
+                <div class="col-6">
+                  <h4 class="mb-4">Checks</h4>
+                </div>
+                <div class="col-6" style="text-align: right">
+                  <button onclick="runChecks()" class="btn btn-dark mb-3">
+                    Run Checks
+                  </button>
+                </div>
               </div>
+
+              <br />
+
+              <strong
+                >Please get the error % to 0 before submitting the file</strong
+              >
+
+              <br />
+
+              <div class="mb-3" style="display: inline">
+                <div
+                  style="
+                    height: 20px;
+                    width: 20px;
+                    margin-right: 5px;
+                    background-color: red;
+                    display: inline-block;
+                  "
+                ></div>
+                Current Error Percentage : <span id="errorPercentage"></span> %
+              </div>
+
+              <div class="mb-3">
+                <div
+                  style="
+                    height: 20px;
+                    width: 20px;
+                    margin-right: 5px;
+                    background-color: yellow;
+                    display: inline-block;
+                  "
+                ></div>
+                Total Number of warnings : <span id="warningNumber"></span>
+              </div>
+
+              <table id="checksList"></table>
             </div>
           </div>
 

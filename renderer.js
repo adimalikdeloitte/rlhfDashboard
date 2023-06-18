@@ -1,5 +1,30 @@
 const { ipcRenderer } = require("electron");
 
+// pre-fill initial values
+document.getElementById("annotatorEmail").value =
+  localStorage.getItem("annotatorEmail") || "";
+
+if (localStorage.getItem("taskChoice") === "SOF") {
+  document.getElementById("taskChoiceSOF").checked = true;
+} else if (localStorage.getItem("taskChoice") === "COT") {
+  document.getElementById("taskChoiceCOT").checked = true;
+}
+
+if (localStorage.getItem("languageChoice") === "Java") {
+  document.getElementById("languageChoiceJava").checked = true;
+} else if (localStorage.getItem("languageChoice") === "Python") {
+  document.getElementById("languageChoicePython").checked = true;
+} else if (localStorage.getItem("languageChoice") === "JavaScript") {
+  document.getElementById("languageChoiceJavascript").checked = true;
+}
+
+document.getElementById("podNumber").value =
+  localStorage.getItem("podNumber") || "";
+
+setTimeout(() => {
+  onConfigChoice(0, 0);
+}, 1000);
+
 document.getElementById("open-file-button").addEventListener("click", () => {
   ipcRenderer.send("open-file-dialog");
 });
@@ -31,10 +56,13 @@ let info,
   explanation,
   originalCodeEditor,
   revisedCodeEditor,
-  taskChoice = "",
-  languageChoice = "",
+  taskChoice = localStorage.getItem("taskChoice") || "",
+  languageChoice = localStorage.getItem("languageChoice") || "",
   sofDesiredQuestion,
-  sofDesiredAnswer;
+  sofDesiredAnswer,
+  annotatorEmail = localStorage.getItem("annotatorEmail") || "",
+  podNumber = localStorage.getItem("podNumber") || "",
+  totalWarnings = 0;
 
 function workOnCOT(data) {
   document.getElementById("content-COT").style.display = "block";
@@ -154,12 +182,6 @@ function workOnSOF(data) {
     "====================Info End===================================="
   );
 
-  const notes = getSection(
-    data.data,
-    "====================Notes Start============================",
-    "====================Notes End===================================="
-  );
-
   const title = getSection(
     data.data,
     "====================Title Start====================================",
@@ -213,8 +235,6 @@ function workOnSOF(data) {
   document.getElementById("desiredSofQuestion").value = desiredSofQuestion;
   document.getElementById("desiredSofAnswer").value = desiredSofAnswer;
 
-  document.getElementById("notes").value = notes;
-
   if (questionsJson[`Do you want to reject this annotation`].answer == "1") {
     document.getElementById("infoRadio1").checked = true;
   } else if (
@@ -242,6 +262,18 @@ ipcRenderer.on("file-data", (event, data) => {
   } else if (taskChoice === "SOF") {
     workOnSOF(data);
   }
+
+  localStorage.setItem("annotatorEmail", annotatorEmail);
+  localStorage.setItem("podNumber", podNumber);
+
+  let tempLang = localStorage.getItem("languageChoice")?.toLowerCase();
+  tempLang !== "javascript" ? (tempLang += "-programming") : tempLang;
+  document.getElementById("compilerLink").addEventListener("click", () => {
+    window.open(
+      `https://www.programiz.com/${tempLang}/online-compiler/`,
+      "_blank"
+    );
+  });
 });
 
 function promptSelected(optionSelected) {
@@ -302,7 +334,6 @@ function submitPrompt() {
 function submitCode() {
   // get the revised code
   let revisedCode = revisedCodeEditor.getValue();
-  console.log(revisedCode);
 
   // write in the text file
   ipcRenderer.send("set-section", {
@@ -339,7 +370,6 @@ function submitCodeQuestions() {
   }
 
   let revisedQuestions = JSON.stringify(questionsJson, null, 4);
-  console.log(revisedQuestions);
 
   ipcRenderer.send("set-section", {
     newText: revisedQuestions,
@@ -390,6 +420,8 @@ function submitDesiredQuestion() {
     endDelimiter:
       "====================Desired Question End====================================",
   });
+
+  showSuccessAlert("Desired Question updated !");
 }
 
 function submitDesiredAnswer() {
@@ -404,6 +436,8 @@ function submitDesiredAnswer() {
     endDelimiter:
       "====================Desired Answer End====================================",
   });
+
+  showSuccessAlert("Desired Answer updated !");
 }
 
 function submitAdditionalInfo() {
@@ -427,7 +461,7 @@ function submitAdditionalInfo() {
   }
 
   let revisedQuestions = JSON.stringify(questionsJson, null, 4);
-  console.log(revisedQuestions);
+  questions = revisedQuestions;
 
   ipcRenderer.send("set-section", {
     newText: revisedQuestions,
@@ -436,6 +470,8 @@ function submitAdditionalInfo() {
     endDelimiter:
       "====================Additional Info End====================================",
   });
+
+  showSuccessAlert("Additional info updated !");
 }
 
 // code for drag and drop functionality
@@ -485,18 +521,696 @@ function getTextareasInContainer(containerId) {
 // const dropContainerTextareas = getTextareasInContainer("dropContainer");
 // console.log("Textareas in Container 2:", dropContainerTextareas);
 
-function onTaskChoice(tc) {
-  taskChoice = tc;
+function onConfigChoice(choice, option) {
+  if (choice === "task") {
+    taskChoice = option;
+    localStorage.setItem("taskChoice", taskChoice);
+  } else if (choice === "language") {
+    languageChoice = option;
+    localStorage.setItem("languageChoice", languageChoice);
+  } else if (choice === "annotatorEmail") {
+    annotatorEmail = document.getElementById("annotatorEmail").value;
+  } else if (choice === "podNumber") {
+    podNumber = document.getElementById("podNumber").value;
+  }
 
-  if (languageChoice != "") {
+  if (
+    taskChoice != "" &&
+    languageChoice != "" &&
+    annotatorEmail != "" &&
+    annotatorEmail.includes("@deloitte.com") &&
+    podNumber !== ""
+  ) {
     document.getElementById("filePicker").removeAttribute("style");
   }
 }
 
-function onLanguageChoice(lc) {
-  languageChoice = lc;
+// working
+function i_my_we(desiredQuestionBlock, codeBlocksList) {
+  var questionBlock = desiredQuestionBlock.split("\n");
 
-  if (taskChoice != "") {
-    document.getElementById("filePicker").removeAttribute("style");
+  // var pattern = /\b(I|My|We)\b/i;
+
+  // var pattern = /(?<!\S)(I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
+
+  var pattern =
+    /(?<!\S)(I|me|my|mine|we|us|our|ours|he|him|his|she|her|hers)(?![^\W_])/gi;
+
+  var inBodyCount = 0;
+
+  var inCodeCount = 0;
+
+  var errLines = [];
+
+  var errLinesInCode = [];
+
+  for (var i = 0; i < questionBlock.length; i++) {
+    var match = questionBlock[i].match(pattern);
+
+    if (match) {
+      errLines.push({ line: questionBlock[i], words: match });
+
+      inBodyCount++;
+    }
   }
+
+  for (let i = 0; i < codeBlocksList?.length; i++) {
+    for (let j = 0; j < codeBlocksList[i].length; j++) {
+      var match = codeBlocksList[i][j].match(pattern);
+
+      if (match) {
+        let y = errLines.filter((x) => x.line === codeBlocksList[i][j]);
+
+        const index = errLines.indexOf(y[0]);
+
+        if (index > -1) {
+          errLines.splice(index, 1);
+
+          inBodyCount--;
+        }
+
+        errLinesInCode.push(codeBlocksList[i][j]);
+
+        inCodeCount++;
+      }
+    }
+  }
+
+  return { inBodyCount, inCodeCount, errLines, errLinesInCode };
+}
+
+// working
+function url_check(desired_question_block) {
+  var urlPattern = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/g;
+  var matches = desired_question_block.match(urlPattern);
+
+  if (matches) {
+    return 1;
+  }
+  return 0;
+}
+
+// working
+function answerInsideAdditionalInformationBlock(additionalInfo) {
+  var listAdditionalInfo = additionalInfo.split("\n");
+  var answerList = [];
+
+  for (var i = 0; i < listAdditionalInfo.length; i++) {
+    var iteration = listAdditionalInfo[i];
+
+    if (iteration.includes("answer")) {
+      if (iteration[iteration.length - 2].match(/\d+/)) {
+        answerList.push(iteration[iteration.length - 2]);
+      }
+    }
+  }
+
+  if (answerList.length === 2) {
+    if (
+      parseInt(answerList[1]) === 1 ||
+      parseInt(answerList[1]) === 2 ||
+      parseInt(answerList[1]) === 3 ||
+      parseInt(answerList[1]) === 4 ||
+      parseInt(answerList[1]) === 5
+    ) {
+      return 0;
+    } else {
+      return 1;
+    }
+  } else {
+    return 1;
+  }
+}
+
+// working
+function markdownCheck(desiredQuestion) {
+  var desiredQuestionArray = desiredQuestion.split("\n");
+  var count = 0;
+  var foundOpeningBackticks = false;
+
+  for (var i = 0; i < desiredQuestionArray.length; i++) {
+    count++;
+    var eachLine = desiredQuestionArray[i];
+
+    if (eachLine.split("`").length - 1 === 3 && eachLine.includes("```")) {
+      foundOpeningBackticks = true;
+
+      for (var j = count; j < desiredQuestionArray.length; j++) {
+        if (desiredQuestionArray[j].includes("```")) {
+          // Markdown Complete
+          return 0;
+        } else if (j === desiredQuestionArray.length - 1) {
+          // Markdown Incomplete
+          return 1;
+        }
+      }
+    } else if (eachLine.split("`").length - 1 > 3 && eachLine.includes("```")) {
+      // "Extra '`' in markdown"
+      return 1;
+    } else if (
+      eachLine === desiredQuestionArray[desiredQuestionArray.length - 1]
+    ) {
+      if (foundOpeningBackticks) {
+        // Markdown Incomplete
+        return 1;
+      }
+      // no markdown
+      return 0;
+    }
+  }
+}
+
+// working
+function loc(desiredAnswer) {
+  var codeBlocks = desiredAnswer.match(/```[\w\s]*\n([\s\S]*?)```/gm);
+
+  var codeBlocksList = [];
+
+  var codeBlocksCount = [];
+
+  for (var i = 0; i < codeBlocks?.length; i++) {
+    var locCount = 0;
+
+    var codeString = "";
+
+    codeBlocks[i] = codeBlocks[i].split("\n");
+
+    codeString = "Snippet " + (i + 1) + "\n";
+
+    locCount -= 1;
+
+    for (var j = 0; j < codeBlocks[i].length; j++) {
+      locCount += 1;
+
+      codeString += codeBlocks[i][j] + "\n";
+    }
+
+    codeBlocksList.push(codeString);
+
+    codeBlocksCount.push(locCount.toString());
+  }
+
+  var codeBlocksListString = codeBlocksList.join("\n");
+
+  var codeBlocksCountString = codeBlocksCount.join("\n");
+
+  return { codeBlocks, codeBlocksCountString, codeBlocksListString };
+}
+
+// working
+function languageCheck(desiredQuestionBlock, codeBlocksList) {
+  var pattern;
+
+  if (languageChoice === "Python") {
+    pattern =
+      /\b(Python|Django|Flask|Bottle|Web2py|CherryPy|Dash|Falcon|Growler|UvLoop|Sanic|PyramidCubicWeb|TurboGears|Hug|MorePath)\b/i;
+  } else if (languageChoice === "Java") {
+    pattern = /\b(Java)\b/i;
+  } else if (languageChoice === "JavaScript") {
+    pattern = /\b(JavaScript|jQuery|Knockout|BackBone|AJAX)\b/i;
+  }
+
+  var inBody = [],
+    inCode = [];
+
+  var questionBlock = desiredQuestionBlock.split("\n");
+
+  for (var i = 0; i < questionBlock?.length; i++) {
+    var eachLine = questionBlock[i];
+
+    var match = eachLine.match(pattern);
+
+    if (match) {
+      inBody.push({ line: questionBlock[i], words: match });
+
+      // return 0;
+    }
+  }
+
+  for (let i = 0; i < codeBlocksList?.length; i++) {
+    for (let j = 0; j < codeBlocksList[i].length; j++) {
+      var match = codeBlocksList[i][j].match(pattern);
+
+      if (match) {
+        let y = inBody.filter((x) => x.line === codeBlocksList[i][j]);
+
+        const index = inBody.indexOf(y[0]);
+
+        if (index > -1) {
+          inBody.splice(index, 1);
+        }
+
+        // inCode.push(codeBlocksList[i][j]);
+      }
+    }
+  }
+
+  return inBody;
+}
+
+//working
+function hasNonAsciiCharacters(desiredQuestionBlock, desiredAnswerBlock) {
+  var asciBlock = desiredQuestionBlock + desiredAnswerBlock;
+  var questionBlock = asciBlock.split("\n");
+
+  for (var i = 0; i < questionBlock.length; i++) {
+    for (var j = 0; j < questionBlock[i].length; j++) {
+      var match = questionBlock[i].charCodeAt(j) > 127;
+      if (match) {
+        return 1;
+      }
+    }
+  }
+
+  return 0;
+}
+
+function tryCatch(codeBlocks) {
+  var status = [];
+
+  const languageAccepted = languageChoice;
+
+  if (languageAccepted === "Java") {
+    // var status = [];
+
+    for (var i = 0; i < codeBlocks.length; i++) {
+      if (
+        codeBlocks[i][0].split("```")[1].toLowerCase() !=
+        languageAccepted.toLowerCase()
+      ) {
+        status.push(0);
+
+        continue;
+      }
+
+      var loc = codeBlocks[i].join("\n");
+
+      var pattern = /try\s*{[\s\S]*?}\s*catch\s*\(.*?\)\s*{[\s\S]*?}/;
+
+      var match = loc.match(pattern);
+
+      if (match) {
+        status.push(0);
+      } else {
+        status.push(1);
+        totalWarnings++;
+      }
+    }
+
+    // return status;
+  } else if (languageAccepted === "JavaScript") {
+    // var status = [];
+
+    for (var i = 0; i < codeBlocks?.length; i++) {
+      if (
+        codeBlocks[i][0].split("```")[1].toLowerCase() !=
+        languageAccepted.toLowerCase()
+      ) {
+        status.push(0);
+
+        continue;
+      }
+
+      var loc = codeBlocks[i].join("\n");
+
+      var pattern = /try\s*{[\s\S]*?}\s*catch\s*\(.*?\)\s*{[\s\S]*?}/;
+
+      var match = loc.match(pattern);
+
+      if (match) {
+        status.push(0);
+      } else {
+        status.push(1);
+        totalWarnings++;
+      }
+    }
+
+    // return status;
+  } else if (languageAccepted === "Python") {
+    // var status = [];
+
+    for (var i = 0; i < codeBlocks.length; i++) {
+      if (
+        codeBlocks[i][0].split("```")[1].toLowerCase() !=
+        languageAccepted.toLowerCase()
+      ) {
+        status.push(0);
+
+        continue;
+      }
+
+      var loc = codeBlocks[i].join("\n");
+
+      var pattern = /try.*?except.*?:/;
+
+      var match = loc.match(pattern);
+
+      if (match) {
+        status.push(0);
+      } else {
+        status.push(1);
+        totalWarnings++;
+      }
+    }
+
+    // return status;
+  }
+
+  return status;
+}
+
+// needs correction
+function codeEndsWith(desiredAnswer) {
+  desiredAnswer = desiredAnswer.split("\n");
+
+  if (desiredAnswer?.length === 1) {
+    if (desiredAnswer[desiredAnswer?.length - 1]?.trim().length == 0) return 1;
+  }
+
+  if (desiredAnswer.length !== 0) {
+    if (
+      desiredAnswer.length >= 2 &&
+      (desiredAnswer[desiredAnswer?.length - 1]?.includes("```") ||
+        desiredAnswer[desiredAnswer?.length - 1]?.includes(">>>") ||
+        desiredAnswer[desiredAnswer?.length - 1]?.trim().length == 0)
+    ) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } else {
+    return 0;
+  }
+}
+
+function getErrorPercentage(report) {
+  let total = 0,
+    correct = 0;
+  for (var key in report) {
+    if (report.hasOwnProperty(key)) {
+      var val = report[key];
+      if (val === 0) {
+        correct += 1;
+      }
+
+      if (val === 0 || val === 1) {
+        total++;
+      }
+    }
+  }
+  return Math.round(100 - (correct / total) * 100);
+}
+
+function keywordsCheck(desiredAnswer) {
+  var desiredAnswerLines = desiredAnswer.split("\n");
+
+  var singleQuotesCount = 0;
+
+  var doubleQuotesCount = 0;
+
+  var status = ["", ""];
+
+  for (var i = 0; i < desiredAnswerLines.length; i++) {
+    var eachLine = desiredAnswerLines[i];
+
+    singleQuotesCount += eachLine.split("'").length - 1;
+
+    doubleQuotesCount += eachLine.split('"').length - 1;
+  }
+
+  if (singleQuotesCount === 0) {
+    status[0] = "No single quoted keywords present";
+  } else if (singleQuotesCount % 2 === 0) {
+    status[0] = singleQuotesCount / 2 + " single quoted keywords present";
+  } else {
+    status[0] = "Single quote missing from keyword";
+    totalWarnings++;
+  }
+
+  if (doubleQuotesCount === 0) {
+    status[1] = "No double quoted keywords present";
+  } else if (doubleQuotesCount % 2 === 0) {
+    status[1] = doubleQuotesCount / 2 + " double quoted keywords present";
+  } else {
+    status[1] = "Double quote missing from keyword";
+    totalWarnings++;
+  }
+
+  return status[1];
+}
+
+function outputInsideMarkdown(desiredAnswer, codeBlocksList) {
+  var status = 0;
+
+  let outputCount = 0;
+
+  let markdownCount = 0;
+
+  desiredAnswer = desiredAnswer.split("\n");
+
+  for (let i = 0; i < desiredAnswer.length; i++) {
+    if (desiredAnswer[i].includes(">>>")) {
+      outputCount++;
+    }
+  }
+
+  for (let i = 0; i < codeBlocksList?.length; i++) {
+    for (let j = 0; j < codeBlocksList[i].length; j++) {
+      if (codeBlocksList[i][j].includes(">>>")) {
+        markdownCount++;
+      }
+    }
+  }
+
+  if (outputCount !== 0 && markdownCount === outputCount) {
+    status = 0;
+  } else if (markdownCount !== outputCount) {
+    status = 1;
+  } else if (outputCount === 0 && markdownCount === 0) {
+    status = 0;
+  }
+
+  return status;
+}
+
+function markdownStatusCheck(desiredAnswer) {
+  var desiredAnswerLines = desiredAnswer.split("\n");
+
+  var markdownCount = 0;
+
+  var markdownLinesList = [];
+
+  var markdownStatusList = [];
+
+  for (var i = 0; i < desiredAnswerLines.length; i++) {
+    var eachLine = desiredAnswerLines[i];
+
+    if (eachLine.includes("```") && eachLine.split("`").length - 1 >= 3) {
+      markdownLinesList.push(eachLine);
+
+      markdownCount += 1;
+    }
+  }
+
+  if (markdownCount !== 0 && markdownCount % 2 === 0) {
+    for (var i = 0; i < markdownCount; i += 2) {
+      if (markdownLinesList[i].split(" ").length > 1) {
+        markdownStatusList.push(
+          "Markdown is incorrect, check for spaces in snippet " + (i + 2) / 2
+        );
+        totalWarnings++;
+      } else if (
+        markdownLinesList[i].length > 3 &&
+        markdownLinesList[i].split("`").length - 1 === 3
+      ) {
+        markdownStatusList.push(
+          "Markdown is correct and language name is present for snippet " +
+            (i + 2) / 2
+        );
+      } else if (
+        markdownLinesList[i].length > 3 &&
+        markdownLinesList[i].split("`").length - 1 >= 3
+      ) {
+        markdownStatusList.push(
+          "Markdown is incorrect, check for extra '`' for snippet " +
+            (i + 2) / 2
+        );
+        totalWarnings++;
+      } else if (markdownLinesList[i].length === 3) {
+        markdownStatusList.push(
+          "Markdown is correct but language name is missing for snippet " +
+            (i + 2) / 2
+        );
+        totalWarnings++;
+      }
+    }
+  } else if (markdownCount === 0) {
+    markdownStatusList.push("No code present");
+    totalWarnings++;
+  } else if (markdownCount !== 0 && markdownCount % 2 !== 0) {
+    markdownStatusList.push("Markdown missing");
+    totalWarnings++;
+  }
+
+  var markdownStatus = markdownStatusList.join("\n");
+
+  return { markdownStatusList, markdownStatus };
+}
+
+function markdownLanguageNameCheck(desiredQuestion) {
+  var status = [];
+
+  var desiredQuestionLines = desiredQuestion.split("\n");
+
+  for (var i = 0; i < desiredQuestionLines.length; i++) {
+    var eachLine = desiredQuestionLines[i];
+
+    if (eachLine.includes("```")) {
+      if (eachLine.length === 3) {
+        status.push(0);
+      } else if (eachLine.length > 3) {
+        status.push(1);
+      }
+    }
+  }
+
+  return status;
+}
+
+function dotDotDotPresent(codeBlocksAnswer) {
+  let flag = 0;
+  !!codeBlocksAnswer &&
+    codeBlocksAnswer[0]?.forEach((v) => {
+      if (v.includes("...")) {
+        flag = 1;
+      }
+    });
+
+  return flag;
+}
+
+function runChecks() {
+  if (desiredSofQuestion?.trim() === "" || desiredSofAnswer?.trim() === "") {
+    showSuccessAlert("Please fill desired question and answer !");
+    return;
+  }
+
+  document.getElementById("checksList").innerHTML =
+    "<tr><th>Category</th><th>Pass / Fail</th></tr>";
+
+  var { codeBlocks } = loc(desiredSofAnswer);
+  let codeBlocksAnswer = codeBlocks;
+
+  var { codeBlocks } = loc(desiredSofQuestion);
+  let codeBlocksQuestion = codeBlocks;
+
+  const tryCatchArr = tryCatch(codeBlocksAnswer);
+  for (let i = 0; i < tryCatchArr.length; i++) {
+    const element = tryCatchArr[i];
+    if (element === 0) {
+      tryCatchArr[i] = `Try Catch status correct for code snippet ${i + 1}`;
+    } else {
+      tryCatchArr[i] = `Try Catch status incorrect for code snippet ${i + 1}`;
+    }
+  }
+
+  tryCatchStr = tryCatchArr.join("\n");
+
+  const finalChecks = {
+    "I, My, We not present in the question":
+      i_my_we(desiredSofQuestion, codeBlocksQuestion).inBodyCount === 0 ? 0 : 1,
+    "Language present in Markdown in the question": markdownLanguageNameCheck(
+      desiredSofQuestion
+    ).includes(1)
+      ? 1
+      : 0,
+    "URL Pattern matching in the Question": url_check(desiredSofQuestion),
+    "Markdown Correct in question": markdownCheck(desiredSofQuestion),
+    "Language keyword present in Question":
+      languageCheck(desiredSofQuestion, codeBlocksQuestion)?.length === 0
+        ? 1
+        : 0,
+    "Double quotes complete around keywords in Question":
+      keywordsCheck(desiredSofQuestion),
+    "I, My, We not present in the Answer":
+      i_my_we(desiredSofAnswer, codeBlocksAnswer).inBodyCount === 0 ? 0 : 1,
+    "Language keyword present in Answer":
+      languageCheck(desiredSofAnswer, codeBlocksAnswer)?.length === 0 ? 1 : 0,
+    "Non ASCII characters not present in the Question or Answer":
+      hasNonAsciiCharacters(desiredSofQuestion, desiredSofAnswer),
+    "Answer ends with illegal characters (```, >>>, empty space)":
+      codeEndsWith(desiredSofAnswer),
+    "Output inside Markdown in Answer": outputInsideMarkdown(
+      desiredSofAnswer,
+      codeBlocksAnswer
+    ),
+    "(...) present inside the code": dotDotDotPresent(codeBlocksAnswer),
+    "Double quotes complete around keywords in Answer":
+      keywordsCheck(desiredSofAnswer),
+    "Markdown status check Answer":
+      markdownStatusCheck(desiredSofAnswer).markdownStatus,
+    "Try catch Status in Answer": tryCatchStr,
+    "Addition Info correct": answerInsideAdditionalInformationBlock(questions),
+  };
+  let errorPercentage = getErrorPercentage(finalChecks);
+
+  Object.entries(finalChecks).forEach(([key, value]) => {
+    const newRow = document.createElement("tr");
+    const newColumn1 = document.createElement("td");
+    newColumn1.innerText = key;
+
+    newRow.appendChild(newColumn1);
+
+    const newColumn2 = document.createElement("td");
+    if (value == 0) {
+      newColumn2.innerText = "Pass";
+      newColumn2.setAttribute("class", "pass");
+    } else if (value == 1) {
+      newColumn2.innerText = "Fail";
+      newColumn2.setAttribute("class", "fail");
+    } else {
+      newColumn2.innerText = value;
+      newColumn2.setAttribute("class", "warning");
+    }
+
+    newRow.appendChild(newColumn2);
+
+    document.getElementById("checksList").appendChild(newRow);
+  });
+
+  document.getElementById("errorPercentage").innerText = errorPercentage;
+  document.getElementById("warningNumber").innerText = totalWarnings;
+  // if (errorPercentage === 0) {
+  let someData = {
+    timestamp: new Date(),
+    podNumber,
+    fileName: document.getElementById("sofFileName").innerText,
+    annotatorEmail,
+    errorPercentage,
+    languageChoice,
+  };
+  ipcRenderer.send("writeLogs", [someData]);
+  // }
+
+  showSuccessAlert(`Error percentage is : ${errorPercentage}%`);
+}
+
+function showSuccessAlert(message) {
+  const alertHTML = `
+    <div id="successAlert" class="alert alert-success alert-dismissible fade show" role="alert">
+      ${message}
+    </div>
+  `;
+
+  const alertContainer = document.getElementById("alertContainer");
+  alertContainer.innerHTML = "";
+  alertContainer.insertAdjacentHTML("beforeend", alertHTML);
+
+  setTimeout(function () {
+    const successAlert = document.getElementById("successAlert");
+    if (successAlert) {
+      successAlert.classList.remove("show");
+      successAlert.classList.add("fade");
+    }
+  }, 3000);
 }
