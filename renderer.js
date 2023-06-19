@@ -551,10 +551,10 @@ function i_my_we(desiredQuestionBlock, codeBlocksList) {
 
   // var pattern = /\b(I|My|We)\b/i;
 
-  // var pattern = /(?<!\S)(I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
-
   var pattern =
-    /(?<!\S)(I|me|my|mine|we|us|our|ours|he|him|his|she|her|hers)(?![^\W_])/gi;
+    /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
+
+  // var pattern = /(?<!\S)(I|me|my|mine|we|us|our|ours|you|your|yours|he|him|his|she|her|hers)(?![^\W_])/gi;
 
   var inBodyCount = 0;
 
@@ -597,17 +597,6 @@ function i_my_we(desiredQuestionBlock, codeBlocksList) {
   }
 
   return { inBodyCount, inCodeCount, errLines, errLinesInCode };
-}
-
-// working
-function url_check(desired_question_block) {
-  var urlPattern = /(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/g;
-  var matches = desired_question_block.match(urlPattern);
-
-  if (matches) {
-    return 1;
-  }
-  return 0;
 }
 
 // working
@@ -725,9 +714,10 @@ function languageCheck(desiredQuestionBlock, codeBlocksList) {
     pattern =
       /\b(Python|Django|Flask|Bottle|Web2py|CherryPy|Dash|Falcon|Growler|UvLoop|Sanic|PyramidCubicWeb|TurboGears|Hug|MorePath)\b/i;
   } else if (languageChoice === "Java") {
-    pattern = /\b(Java)\b/i;
+    pattern = /\b(Java|JavaFX)\b/i;
   } else if (languageChoice === "JavaScript") {
-    pattern = /\b(JavaScript|jQuery|Knockout|BackBone|AJAX)\b/i;
+    pattern =
+      /\b(JavaScript|jQuery|Knockout|BackBone|AJAX|AngularJS|Angular.js|Angular JS|Node.js|NodeJS|Node JS|Socket.IO|CoffeeScript)\b/i;
   }
 
   var inBody = [],
@@ -788,43 +778,13 @@ function hasNonAsciiCharacters(desiredQuestionBlock, desiredAnswerBlock) {
 function tryCatch(codeBlocks) {
   var status = [];
 
-  const languageAccepted = languageChoice;
-
-  if (languageAccepted === "Java") {
-    // var status = [];
-
-    for (var i = 0; i < codeBlocks.length; i++) {
-      if (
-        codeBlocks[i][0].split("```")[1].toLowerCase() !=
-        languageAccepted.toLowerCase()
-      ) {
-        status.push(0);
-
-        continue;
-      }
-
-      var loc = codeBlocks[i].join("\n");
-
-      var pattern = /try\s*{[\s\S]*?}\s*catch\s*\(.*?\)\s*{[\s\S]*?}/;
-
-      var match = loc.match(pattern);
-
-      if (match) {
-        status.push(0);
-      } else {
-        status.push(1);
-        totalWarnings++;
-      }
-    }
-
-    // return status;
-  } else if (languageAccepted === "JavaScript") {
+  if (languageChoice === "Java") {
     // var status = [];
 
     for (var i = 0; i < codeBlocks?.length; i++) {
       if (
         codeBlocks[i][0].split("```")[1].toLowerCase() !=
-        languageAccepted.toLowerCase()
+        languageChoice.toLowerCase()
       ) {
         status.push(0);
 
@@ -841,18 +801,17 @@ function tryCatch(codeBlocks) {
         status.push(0);
       } else {
         status.push(1);
-        totalWarnings++;
       }
     }
 
     // return status;
-  } else if (languageAccepted === "Python") {
+  } else if (languageChoice === "JavaScript") {
     // var status = [];
 
-    for (var i = 0; i < codeBlocks.length; i++) {
+    for (var i = 0; i < codeBlocks?.length; i++) {
       if (
         codeBlocks[i][0].split("```")[1].toLowerCase() !=
-        languageAccepted.toLowerCase()
+        languageChoice.toLowerCase()
       ) {
         status.push(0);
 
@@ -861,7 +820,7 @@ function tryCatch(codeBlocks) {
 
       var loc = codeBlocks[i].join("\n");
 
-      var pattern = /try.*?except.*?:/;
+      var pattern = /try\s*{[\s\S]*?}\s*catch\s*\(.*?\)\s*{[\s\S]*?}/;
 
       var match = loc.match(pattern);
 
@@ -869,7 +828,35 @@ function tryCatch(codeBlocks) {
         status.push(0);
       } else {
         status.push(1);
-        totalWarnings++;
+      }
+    }
+
+    // return status;
+  } else if (languageChoice === "Python") {
+    // var status = [];
+
+    for (var i = 0; i < codeBlocks?.length; i++) {
+      if (
+        codeBlocks[i][0].split("```")[1].toLowerCase() !=
+        languageChoice.toLowerCase()
+      ) {
+        status.push(0);
+
+        continue;
+      }
+
+      var loc = codeBlocks[i].join("\n");
+
+      // var pattern = /try.*?except.*?:/;
+
+      var pattern = /try\s*:\s*([\s\S]*?)\s*except\s*([\s\S]*?):/g;
+
+      var match = loc.match(pattern);
+
+      if (match) {
+        status.push(0);
+      } else {
+        status.push(1);
       }
     }
 
@@ -1126,7 +1113,6 @@ function runChecks() {
     ).includes(1)
       ? 1
       : 0,
-    "URL Pattern matching in the Question": url_check(desiredSofQuestion),
     "Markdown Correct in question": markdownCheck(desiredSofQuestion),
     "Language keyword present in Question":
       languageCheck(desiredSofQuestion, codeBlocksQuestion)?.length === 0
