@@ -1079,17 +1079,19 @@ function markdownLanguageNameCheck(desiredQuestion) {
 
 function dotDotDotPresent(codeBlocksAnswer) {
   let flag = 0;
-  !!codeBlocksAnswer &&
-    codeBlocksAnswer[0]?.forEach((v) => {
+  for (let i = 0; i < codeBlocksAnswer?.length; i++) {
+    codeBlocksAnswer[i]?.forEach((v) => {
       if (v.includes("...")) {
         flag = 1;
       }
     });
+  }
 
   return flag;
 }
 
 function runChecks() {
+  totalWarnings = 0;
   if (desiredSofQuestion?.trim() === "" || desiredSofAnswer?.trim() === "") {
     showSuccessAlert("Please fill desired question and answer !");
     return;
