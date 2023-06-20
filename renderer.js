@@ -546,13 +546,13 @@ function onConfigChoice(choice, option) {
 }
 
 // working
-function i_my_we(desiredQuestionBlock, codeBlocksList) {
-  var questionBlock = desiredQuestionBlock.split("\n");
-
+function i_my_we(desiredBlock, codeBlocksList) {
   // var pattern = /\b(I|My|We)\b/i;
 
+  // var pattern = /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
+
   var pattern =
-    /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
+    /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_]|.e)/g;
 
   // var pattern = /(?<!\S)(I|me|my|mine|we|us|our|ours|you|your|yours|he|him|his|she|her|hers)(?![^\W_])/gi;
 
@@ -564,39 +564,31 @@ function i_my_we(desiredQuestionBlock, codeBlocksList) {
 
   var errLinesInCode = [];
 
-  for (var i = 0; i < questionBlock.length; i++) {
-    var match = questionBlock[i].match(pattern);
+  var codeLess = desiredBlock.split("\n");
+
+  for (let i = 0; i < codeBlocksList?.length; i++) {
+    for (let j = 0; j < codeBlocksList[i].length; j++) {
+      if (codeLess.includes(codeBlocksList[i][j])) {
+        const index = codeLess.indexOf(codeBlocksList[i][j]);
+
+        if (index > -1) {
+          codeLess.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  for (var i = 0; i < codeLess?.length; i++) {
+    var match = codeLess[i].match(pattern);
 
     if (match) {
-      errLines.push({ line: questionBlock[i], words: match });
+      errLines.push({ line: codeLess[i], words: match });
 
       inBodyCount++;
     }
   }
 
-  for (let i = 0; i < codeBlocksList?.length; i++) {
-    for (let j = 0; j < codeBlocksList[i].length; j++) {
-      var match = codeBlocksList[i][j].match(pattern);
-
-      if (match) {
-        let y = errLines.filter((x) => x.line === codeBlocksList[i][j]);
-
-        const index = errLines.indexOf(y[0]);
-
-        if (index > -1) {
-          errLines.splice(index, 1);
-
-          inBodyCount--;
-        }
-
-        errLinesInCode.push(codeBlocksList[i][j]);
-
-        inCodeCount++;
-      }
-    }
-  }
-
-  return { inBodyCount, inCodeCount, errLines, errLinesInCode };
+  return { inBodyCount, errLines };
 }
 
 // working
@@ -604,7 +596,7 @@ function answerInsideAdditionalInformationBlock(additionalInfo) {
   var listAdditionalInfo = additionalInfo.split("\n");
   var answerList = [];
 
-  for (var i = 0; i < listAdditionalInfo.length; i++) {
+  for (var i = 0; i < listAdditionalInfo?.length; i++) {
     var iteration = listAdditionalInfo[i];
 
     if (iteration.includes("answer")) {
@@ -637,18 +629,18 @@ function markdownCheck(desiredQuestion) {
   var count = 0;
   var foundOpeningBackticks = false;
 
-  for (var i = 0; i < desiredQuestionArray.length; i++) {
+  for (var i = 0; i < desiredQuestionArray?.length; i++) {
     count++;
     var eachLine = desiredQuestionArray[i];
 
     if (eachLine.split("`").length - 1 === 3 && eachLine.includes("```")) {
       foundOpeningBackticks = true;
 
-      for (var j = count; j < desiredQuestionArray.length; j++) {
+      for (var j = count; j < desiredQuestionArray?.length; j++) {
         if (desiredQuestionArray[j].includes("```")) {
           // Markdown Complete
           return 0;
-        } else if (j === desiredQuestionArray.length - 1) {
+        } else if (j === desiredQuestionArray?.length - 1) {
           // Markdown Incomplete
           return 1;
         }
@@ -657,7 +649,7 @@ function markdownCheck(desiredQuestion) {
       // "Extra '`' in markdown"
       return 1;
     } else if (
-      eachLine === desiredQuestionArray[desiredQuestionArray.length - 1]
+      eachLine === desiredQuestionArray[desiredQuestionArray?.length - 1]
     ) {
       if (foundOpeningBackticks) {
         // Markdown Incomplete
@@ -717,7 +709,7 @@ function languageCheck(desiredQuestionBlock, codeBlocksList) {
     pattern = /\b(Java|JavaFX)\b/i;
   } else if (languageChoice === "JavaScript") {
     pattern =
-      /\b(JavaScript|jQuery|Knockout|BackBone|AJAX|AngularJS|Angular.js|Angular JS|Node.js|NodeJS|Node JS|Socket.IO|CoffeeScript)\b/i;
+      /\b(JavaScript|jQuery|Knockout|BackBone|AJAX|AngularJS|Angular.js|Angular JS|Node.js|NodeJS|Node JS|Socket.IO|CoffeeScript|LeafletJS|Leaflet JS)\b/i;
   }
 
   var inBody = [],
@@ -759,20 +751,25 @@ function languageCheck(desiredQuestionBlock, codeBlocksList) {
 }
 
 //working
-function hasNonAsciiCharacters(desiredQuestionBlock, desiredAnswerBlock) {
-  var asciBlock = desiredQuestionBlock + desiredAnswerBlock;
-  var questionBlock = asciBlock.split("\n");
+function hasNonAsciiCharacters(desiredBlock) {
+  var desiredBlockList = desiredBlock.split("\n");
 
-  for (var i = 0; i < questionBlock.length; i++) {
-    for (var j = 0; j < questionBlock[i].length; j++) {
-      var match = questionBlock[i].charCodeAt(j) > 127;
+  var chars = [],
+    lines = [];
+
+  for (var i = 0; i < desiredBlockList?.length; i++) {
+    for (var j = 0; j < desiredBlockList[i].length; j++) {
+      var match = desiredBlockList[i].charCodeAt(j) > 127;
+
       if (match) {
-        return 1;
+        chars.push(desiredBlockList[i][j]);
+
+        lines.push(desiredBlockList[i]);
       }
     }
   }
 
-  return 0;
+  return { chars, lines };
 }
 
 function tryCatch(codeBlocks) {
@@ -874,9 +871,9 @@ function codeEndsWith(desiredAnswer) {
     if (desiredAnswer[desiredAnswer?.length - 1]?.trim().length == 0) return 1;
   }
 
-  if (desiredAnswer.length !== 0) {
+  if (desiredAnswer?.length !== 0) {
     if (
-      desiredAnswer.length >= 2 &&
+      desiredAnswer?.length >= 2 &&
       (desiredAnswer[desiredAnswer?.length - 1]?.includes("```") ||
         desiredAnswer[desiredAnswer?.length - 1]?.includes(">>>") ||
         desiredAnswer[desiredAnswer?.length - 1]?.trim().length == 0)
@@ -917,7 +914,7 @@ function keywordsCheck(desiredAnswer) {
 
   var status = ["", ""];
 
-  for (var i = 0; i < desiredAnswerLines.length; i++) {
+  for (var i = 0; i < desiredAnswerLines?.length; i++) {
     var eachLine = desiredAnswerLines[i];
 
     singleQuotesCount += eachLine.split("'").length - 1;
@@ -943,7 +940,7 @@ function keywordsCheck(desiredAnswer) {
     totalWarnings++;
   }
 
-  return status[1];
+  return status;
 }
 
 function outputInsideMarkdown(desiredAnswer, codeBlocksList) {
@@ -955,7 +952,7 @@ function outputInsideMarkdown(desiredAnswer, codeBlocksList) {
 
   desiredAnswer = desiredAnswer.split("\n");
 
-  for (let i = 0; i < desiredAnswer.length; i++) {
+  for (let i = 0; i < desiredAnswer?.length; i++) {
     if (desiredAnswer[i].includes(">>>")) {
       outputCount++;
     }
@@ -989,7 +986,7 @@ function markdownStatusCheck(desiredAnswer) {
 
   var markdownStatusList = [];
 
-  for (var i = 0; i < desiredAnswerLines.length; i++) {
+  for (var i = 0; i < desiredAnswerLines?.length; i++) {
     var eachLine = desiredAnswerLines[i];
 
     if (eachLine.includes("```") && eachLine.split("`").length - 1 >= 3) {
@@ -1077,8 +1074,42 @@ function dotDotDotPresent(codeBlocksAnswer) {
   return flag;
 }
 
+function hasBackTicks(desiredBlock, codeBlocksList) {
+  var codeLess = desiredBlock.split("\n");
+
+  for (let i = 0; i < codeBlocksList?.length; i++) {
+    for (let j = 0; j < codeBlocksList[i].length; j++) {
+      if (codeLess.includes(codeBlocksList[i][j])) {
+        const index = codeLess.indexOf(codeBlocksList[i][j]);
+
+        if (index > -1) {
+          codeLess.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  for (var i = 0; i < codeLess?.length; i++) {
+    for (var j = 0; j < codeLess[i].length; j++) {
+      if (codeLess[i][j] === "`") {
+        return 1;
+      }
+    }
+  }
+
+  return 0;
+}
+
 function runChecks() {
   totalWarnings = 0;
+  document.getElementById("i_my_we_error").innerHTML = "";
+  document.getElementById("i_my_we_error_container").style.display = "none";
+
+  document.getElementById("non_ascii_characters").innerHTML = "";
+  document.getElementById("non_ascii_characters_container").style.display =
+    "none";
+
+  document.getElementById("no_error_line").style.display = "block";
   if (desiredSofQuestion?.trim() === "" || desiredSofAnswer?.trim() === "") {
     showSuccessAlert("Please fill desired question and answer !");
     return;
@@ -1094,7 +1125,7 @@ function runChecks() {
   let codeBlocksQuestion = codeBlocks;
 
   const tryCatchArr = tryCatch(codeBlocksAnswer);
-  for (let i = 0; i < tryCatchArr.length; i++) {
+  for (let i = 0; i < tryCatchArr?.length; i++) {
     const element = tryCatchArr[i];
     if (element === 0) {
       tryCatchArr[i] = `Try Catch status correct for code snippet ${i + 1}`;
@@ -1113,28 +1144,38 @@ function runChecks() {
     ).includes(1)
       ? 1
       : 0,
-    "Markdown Correct in question": markdownCheck(desiredSofQuestion),
+    "Markdown Correct in the question": markdownCheck(desiredSofQuestion),
+    "Backticks present in the question": hasBackTicks(
+      desiredSofQuestion,
+      codeBlocksQuestion
+    ),
     "Language keyword present in Question":
       languageCheck(desiredSofQuestion, codeBlocksQuestion)?.length === 0
         ? 1
         : 0,
     "Double quotes complete around keywords in Question":
-      keywordsCheck(desiredSofQuestion),
+      keywordsCheck(desiredSofQuestion).join("\n"),
+    "Non ASCII characters not present in the Question":
+      hasNonAsciiCharacters(desiredSofQuestion)?.chars?.length === 0 ? 0 : 1,
     "I, My, We not present in the Answer":
       i_my_we(desiredSofAnswer, codeBlocksAnswer).inBodyCount === 0 ? 0 : 1,
     "Language keyword present in Answer":
       languageCheck(desiredSofAnswer, codeBlocksAnswer)?.length === 0 ? 1 : 0,
-    "Non ASCII characters not present in the Question or Answer":
-      hasNonAsciiCharacters(desiredSofQuestion, desiredSofAnswer),
+    "Non ASCII characters not present in the Answer":
+      hasNonAsciiCharacters(desiredSofAnswer)?.chars?.length === 0 ? 0 : 1,
     "Answer ends with illegal characters (```, >>>, empty space)":
       codeEndsWith(desiredSofAnswer),
+    "Backticks present in the answer": hasBackTicks(
+      desiredSofAnswer,
+      codeBlocksAnswer
+    ),
     "Output inside Markdown in Answer": outputInsideMarkdown(
       desiredSofAnswer,
       codeBlocksAnswer
     ),
     "(...) present inside the code": dotDotDotPresent(codeBlocksAnswer),
     "Double quotes complete around keywords in Answer":
-      keywordsCheck(desiredSofAnswer),
+      keywordsCheck(desiredSofAnswer).join("\n"),
     "Markdown status check Answer":
       markdownStatusCheck(desiredSofAnswer).markdownStatus,
     "Try catch Status in Answer": tryCatchStr,
@@ -1181,6 +1222,108 @@ function runChecks() {
   // }
 
   showSuccessAlert(`Error percentage is : ${errorPercentage}%`);
+
+  if (errorPercentage !== 0) {
+    // i my we in question detection
+    const errorLinesQuestion = i_my_we(
+      desiredSofQuestion,
+      codeBlocksQuestion
+    )?.errLines;
+    if (errorLinesQuestion?.length !== 0) {
+      // insert heading in list for question errors
+      const errHeadingQuestion = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired question :";
+      errHeadingQuestion.appendChild(strongText);
+      document.getElementById("i_my_we_error").appendChild(errHeadingQuestion);
+      // list the error lines
+      errorLinesQuestion?.forEach((v) => {
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${v.line}" (Words caught: ${v?.words?.join(
+          ", "
+        )})`;
+
+        document.getElementById("i_my_we_error").appendChild(listItem);
+      });
+
+      document.getElementById("i_my_we_error_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+
+    // i my we in answer detection
+    const errorLines = i_my_we(desiredSofAnswer, codeBlocksAnswer)?.errLines;
+    if (errorLines?.length !== 0) {
+      // insert heading in list for answer errors
+      const errHeadingAnswer = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired answer :";
+      errHeadingAnswer.appendChild(strongText);
+      document.getElementById("i_my_we_error").appendChild(errHeadingAnswer);
+      // list the error lines
+      errorLines?.forEach((v) => {
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${v.line}" (Words caught: ${v?.words?.join(
+          ", "
+        )})`;
+
+        document.getElementById("i_my_we_error").appendChild(listItem);
+      });
+
+      document.getElementById("i_my_we_error_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+
+    // non ascii characters detection
+    const nonAsciiInfoQuestion = hasNonAsciiCharacters(desiredSofQuestion);
+    if (nonAsciiInfoQuestion.chars?.length !== 0) {
+      // insert heading in list for question errors
+      const errHeadingQuestion = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired question :";
+      errHeadingQuestion.appendChild(strongText);
+      document
+        .getElementById("non_ascii_characters")
+        .appendChild(errHeadingQuestion);
+      for (let x = 0; x < nonAsciiInfoQuestion?.chars?.length; x++) {
+        const character = nonAsciiInfoQuestion?.chars[x];
+        const line = nonAsciiInfoQuestion?.lines[x];
+
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${line}" (Character caught: ${character})`;
+
+        document.getElementById("non_ascii_characters").appendChild(listItem);
+      }
+      document.getElementById("non_ascii_characters_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+
+    const nonAsciiInfoAnswer = hasNonAsciiCharacters(desiredSofAnswer);
+    if (nonAsciiInfoAnswer.chars?.length !== 0) {
+      // insert heading in list for answer errors
+      const errHeadingAnswer = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired answer :";
+      errHeadingAnswer.appendChild(strongText);
+      document
+        .getElementById("non_ascii_characters")
+        .appendChild(errHeadingAnswer);
+      for (let x = 0; x < nonAsciiInfoAnswer?.chars?.length; x++) {
+        const character = nonAsciiInfoAnswer?.chars[x];
+        const line = nonAsciiInfoAnswer?.lines[x];
+
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${line}" (Character caught: ${character})`;
+
+        document.getElementById("non_ascii_characters").appendChild(listItem);
+      }
+      document.getElementById("non_ascii_characters_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+  }
 }
 
 function showSuccessAlert(message) {

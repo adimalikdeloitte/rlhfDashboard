@@ -425,6 +425,36 @@
 
           <hr />
         </section>
+
+        <section id="ErrorInfo">
+          <hr />
+
+          <div class="row">
+            <div class="col-12">
+              <h4 class="mb-4">Error info</h4>
+
+              <br />
+              <p id="no_error_line">No error info !</p>
+
+              <div style="display: none" id="i_my_we_error_container">
+                <h5>Keywords not allowed :</h5>
+                <strong
+                  >i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers</strong
+                >
+                <span>Lines caught in error are :</span>
+                <ul id="i_my_we_error"></ul>
+              </div>
+
+              <div style="display: none" id="non_ascii_characters_container">
+                <h5>Non ASCII characters found in the following lines:</h5>
+                <span>Lines caught in error are :</span>
+                <ul id="non_ascii_characters"></ul>
+              </div>
+            </div>
+          </div>
+
+          <hr />
+        </section>
       </div>
 
       <div id="content-COT" style="display: none" class="mt-5">
