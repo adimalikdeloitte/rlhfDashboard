@@ -17,21 +17,177 @@
   <body>
     <div id="alertContainer" class="container mt-4"></div>
 
+    <!-- Warning Modal -->
+    <div
+      class="modal fade"
+      id="exampleModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">WARNING !!!</h5>
+            <button
+              type="button"
+              class="close"
+              style="border: none"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Have you clicked on the "UPDATE" button for desired question, answer
+            and additional info ?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+              onclick="location.reload()"
+            >
+              I am sure, go to home!
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Oh, I forgot, let me update!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Answer Content Modal -->
+    <div
+      class="modal fade"
+      id="contentModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="contentModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+        role="document"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="contentModalLongTitle">
+              Desired Answer
+            </h5>
+            <button
+              type="button"
+              class="close"
+              style="border: none"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <grammarly-editor-plugin>
+              <textarea
+                id="desiredSofAnswerModal"
+                placeholder="You desired answer goes here ..."
+                rows="15"
+                class="p-3"
+                style="border-radius: 5px"
+              ></textarea>
+            </grammarly-editor-plugin>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Minimise
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Question Content Modal -->
+    <div
+      class="modal fade"
+      id="questionContentModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="questionContentModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+        role="document"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="questionContentModalLongTitle">
+              Desired Question
+            </h5>
+            <button
+              type="button"
+              class="close"
+              style="border: none"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <grammarly-editor-plugin>
+              <textarea
+                id="desiredSofQuestionModal"
+                placeholder="You desired question goes here ..."
+                rows="15"
+                class="p-3"
+                style="border-radius: 5px"
+              ></textarea>
+            </grammarly-editor-plugin>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Minimise
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Section 1 : Navigation Bar start -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <button
           style="border: none"
-          onclick="location.reload()"
           class="navbar-brand"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModalCenter"
         >
           AWS RLHF
         </button>
-
         <button
           style="border: none"
-          onclick="location.reload()"
           class="navbar-brand"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModalCenter"
         >
           < Back to home
         </button>
@@ -213,7 +369,21 @@
 
           <div class="row">
             <div class="col-6">
-              <h4 class="mb-4">Desired Question</h4>
+              <div class="row align-items-center">
+                <div class="col-6">
+                  <h4>Desired Question</h4>
+                </div>
+                <div class="col-6" style="text-align: right">
+                  <button
+                    style="border: none"
+                    class="navbar-brand"
+                    data-bs-toggle="modal"
+                    data-bs-target="#questionContentModalCenter"
+                  >
+                    Maximize Content
+                  </button>
+                </div>
+              </div>
 
               <grammarly-editor-plugin>
                 <textarea
@@ -227,7 +397,21 @@
             </div>
 
             <div class="col-6">
-              <h4 class="mb-4">Desired Answer</h4>
+              <div class="row align-items-center">
+                <div class="col-6">
+                  <h4>Desired Answer</h4>
+                </div>
+                <div class="col-6" style="text-align: right">
+                  <button
+                    style="border: none"
+                    class="navbar-brand"
+                    data-bs-toggle="modal"
+                    data-bs-target="#contentModalCenter"
+                  >
+                    Maximize Content
+                  </button>
+                </div>
+              </div>
 
               <grammarly-editor-plugin>
                 <textarea
@@ -839,6 +1023,14 @@
           <hr />
         </section>
       </div>
+
+      <br />
+      <div style="text-align: center">
+        <strong style="opacity: 0.7">v2.0.0</strong>
+      </div>
+
+      <br />
+      <br />
     </div>
 
     <!-- Section 2 : Main Body end -->

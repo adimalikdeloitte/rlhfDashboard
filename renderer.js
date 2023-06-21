@@ -29,6 +29,26 @@ document.getElementById("open-file-button").addEventListener("click", () => {
   ipcRenderer.send("open-file-dialog");
 });
 
+// Get references to the textareas
+const desiredAnswerTextArea = document.getElementById("desiredSofAnswer");
+const desiredAnswerModalTextArea = document.getElementById(
+  "desiredSofAnswerModal"
+);
+
+// Add input event listeners to both textareas
+desiredAnswerTextArea.addEventListener("input", syncAnswerTextarea);
+desiredAnswerModalTextArea.addEventListener("input", syncAnswerTextarea);
+
+// Get references to the textareas
+const desiredQuestionTextArea = document.getElementById("desiredSofQuestion");
+const desiredQuestionModalTextArea = document.getElementById(
+  "desiredSofQuestionModal"
+);
+
+// Add input event listeners to both textareas
+desiredQuestionTextArea.addEventListener("input", syncQuestionTextarea);
+desiredQuestionModalTextArea.addEventListener("input", syncQuestionTextarea);
+
 function getSection(data, startDelimiter, endDelimiter) {
   const startIndex = data.indexOf(startDelimiter) + startDelimiter.length;
   const endIndex = data.indexOf(endDelimiter);
@@ -274,6 +294,12 @@ ipcRenderer.on("file-data", (event, data) => {
       "_blank"
     );
   });
+
+  // sync the textboxes if they already have any value
+  desiredAnswerModalTextArea.value = desiredAnswerTextArea.value;
+  desiredQuestionModalTextArea.value = desiredQuestionTextArea.value;
+
+  console.log(desiredQuestionModalTextArea.value);
 });
 
 function promptSelected(optionSelected) {
@@ -552,7 +578,7 @@ function i_my_we(desiredBlock, codeBlocksList) {
   // var pattern = /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_])/g;
 
   var pattern =
-    /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|you|You|your|Your|yours|Yours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_]|.e)/g;
+    /(?<!\S)(i|I|me|Me|my|My|mine|Mine|we|We|us|Us|our|Our|ours|Ours|he|He|him|Him|his|His|she|She|her|Her|hers|Hers)(?![^\W_]|.e)/g;
 
   // var pattern = /(?<!\S)(I|me|my|mine|we|us|our|ours|you|your|yours|he|him|his|she|her|hers)(?![^\W_])/gi;
 
@@ -709,7 +735,7 @@ function languageCheck(desiredQuestionBlock, codeBlocksList) {
     pattern = /\b(Java|JavaFX)\b/i;
   } else if (languageChoice === "JavaScript") {
     pattern =
-      /\b(JavaScript|jQuery|Knockout|BackBone|AJAX|AngularJS|Angular.js|Angular JS|Node.js|NodeJS|Node JS|Socket.IO|CoffeeScript|LeafletJS|Leaflet JS)\b/i;
+      /\b(JavaScript|jQuery|Knockout|BackBone|AJAX|AngularJS|Angular.js|Angular JS|Node.js|NodeJS|Node JS|Socket.IO|CoffeeScript|LeafletJS|Leaflet JS|Underscore.js|Underscore JS|UnderscoreJS)\b/i;
   }
 
   var inBody = [],
@@ -1344,4 +1370,32 @@ function showSuccessAlert(message) {
       successAlert.classList.add("fade");
     }
   }, 3000);
+}
+
+// Function to sync the textareas
+function syncAnswerTextarea(event) {
+  const targetTextarea = event.target;
+
+  // Check which textarea triggered the event
+  if (targetTextarea.id === "desiredSofAnswer") {
+    // Copy desiredAnswerTextArea's value to desiredAnswerModalTextArea
+    desiredAnswerModalTextArea.value = targetTextarea.value;
+  } else if (targetTextarea.id === "desiredSofAnswerModal") {
+    // Copy desiredAnswerModalTextArea's value to desiredAnswerTextArea
+    desiredAnswerTextArea.value = targetTextarea.value;
+  }
+}
+
+// Function to sync the textareas
+function syncQuestionTextarea(event) {
+  const targetTextarea = event.target;
+
+  // Check which textarea triggered the event
+  if (targetTextarea.id === "desiredSofQuestion") {
+    // Copy desiredQuestionTextArea's value to desiredQuestionModalTextArea
+    desiredQuestionModalTextArea.value = targetTextarea.value;
+  } else if (targetTextarea.id === "desiredSofQuestionModal") {
+    // Copy desiredQuestionModalTextArea's value to desiredQuestionTextArea
+    desiredQuestionTextArea.value = targetTextarea.value;
+  }
 }
