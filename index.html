@@ -20,16 +20,16 @@
     <!-- Warning Modal -->
     <div
       class="modal fade"
-      id="exampleModalCenter"
+      id="warningModalCenter"
       tabindex="-1"
       role="dialog"
-      aria-labelledby="exampleModalCenterTitle"
+      aria-labelledby="warningModalCenterTitle"
       aria-hidden="true"
     >
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLongTitle">WARNING !!!</h5>
+            <h5 class="modal-title" id="warningModalLongTitle">WARNING !!!</h5>
             <button
               type="button"
               class="close"
@@ -52,6 +52,56 @@
               onclick="location.reload()"
             >
               I am sure, go to home!
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Oh, I forgot, let me update!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Run Checks Warning Modal -->
+    <div
+      class="modal fade"
+      id="runChecksWarningModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="runChecksWarningModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="runChecksWarningModalLongTitle">
+              WARNING !!!
+            </h5>
+            <button
+              type="button"
+              class="close"
+              style="border: none"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Make sure you click on "UPDATE" buttons before running checks
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onclick="runChecks()"
+            >
+              I am sure, run the checks!
             </button>
             <button
               type="button"
@@ -178,7 +228,7 @@
         <button
           class="navbar-brand btn btn-outline-secondary"
           data-bs-toggle="modal"
-          data-bs-target="#exampleModalCenter"
+          data-bs-target="#warningModalCenter"
         >
           AWS RLHF
         </button>
@@ -192,7 +242,7 @@
           <button
             class="btn btn-outline-secondary navbar-brand"
             data-bs-toggle="modal"
-            data-bs-target="#exampleModalCenter"
+            data-bs-target="#warningModalCenter"
           >
             < Back to home
           </button>
@@ -569,7 +619,11 @@
                   <h4 class="mb-4">Checks</h4>
                 </div>
                 <div class="col-6" style="text-align: right">
-                  <button onclick="runChecks()" class="btn btn-dark mb-3">
+                  <button
+                    class="btn btn-dark mb-3"
+                    data-bs-toggle="modal"
+                    data-bs-target="#runChecksWarningModalCenter"
+                  >
                     Run Checks
                   </button>
                 </div>

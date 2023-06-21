@@ -18,6 +18,13 @@ if (localStorage.getItem("languageChoice") === "Java") {
   document.getElementById("languageChoiceJavascript").checked = true;
 }
 
+// set the theme
+if (localStorage.getItem("theme") === "dark") {
+  document.documentElement.setAttribute("data-bs-theme", "dark");
+} else {
+  document.documentElement.setAttribute("data-bs-theme", "light");
+}
+
 document.getElementById("podNumber").value =
   localStorage.getItem("podNumber") || "";
 
@@ -1401,7 +1408,11 @@ function syncQuestionTextarea(event) {
 }
 
 function toggleTheme() {
-  typeof document.documentElement.attributes[0] === "undefined"
-    ? document.documentElement.setAttribute("data-bs-theme", "dark")
-    : document.documentElement.removeAttribute("data-bs-theme");
+  if (typeof document.documentElement.attributes[0] === "undefined") {
+    document.documentElement.setAttribute("data-bs-theme", "dark");
+    localStorage.setItem("theme", "dark");
+  } else {
+    document.documentElement.removeAttribute("data-bs-theme");
+    localStorage.setItem("theme", "light");
+  }
 }
