@@ -46,15 +46,18 @@ td {
 }
 
 .pass {
-  background-color: greenyellow;
+  background-color: rgb(91, 151, 0);
+  color: black;
 }
 
 .fail {
-  background-color: red;
+  background-color: rgb(177, 0, 0);
+  color: black;
 }
 
 .warning {
-  background-color: yellow;
+  background-color: rgb(218, 218, 0);
+  color: black;
 }
 
 #alertContainer {

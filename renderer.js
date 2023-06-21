@@ -1399,3 +1399,9 @@ function syncQuestionTextarea(event) {
     desiredQuestionTextArea.value = targetTextarea.value;
   }
 }
+
+function toggleTheme() {
+  typeof document.documentElement.attributes[0] === "undefined"
+    ? document.documentElement.setAttribute("data-bs-theme", "dark")
+    : document.documentElement.removeAttribute("data-bs-theme");
+}

@@ -1,4 +1,10 @@
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  nativeTheme,
+} = require("electron");
 const fs = require("fs");
 const log = require("electron-log");
 
@@ -17,6 +23,7 @@ function createWindow() {
   });
 
   mainWindow.loadFile("index.html");
+  nativeTheme.themeSource = "dark";
 
   let currFilePath = "";
 

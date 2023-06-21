@@ -176,21 +176,27 @@
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <button
-          style="border: none"
-          class="navbar-brand"
+          class="navbar-brand btn btn-outline-secondary"
           data-bs-toggle="modal"
           data-bs-target="#exampleModalCenter"
         >
           AWS RLHF
         </button>
-        <button
-          style="border: none"
-          class="navbar-brand"
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModalCenter"
-        >
-          < Back to home
-        </button>
+        <div>
+          <button
+            class="btn btn-outline-secondary navbar-brand"
+            onclick="toggleTheme()"
+          >
+            Toggle theme
+          </button>
+          <button
+            class="btn btn-outline-secondary navbar-brand"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModalCenter"
+          >
+            < Back to home
+          </button>
+        </div>
       </div>
     </nav>
 
