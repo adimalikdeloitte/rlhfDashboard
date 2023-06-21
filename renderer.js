@@ -305,8 +305,6 @@ ipcRenderer.on("file-data", (event, data) => {
   // sync the textboxes if they already have any value
   desiredAnswerModalTextArea.value = desiredAnswerTextArea.value;
   desiredQuestionModalTextArea.value = desiredQuestionTextArea.value;
-
-  console.log(desiredQuestionModalTextArea.value);
 });
 
 function promptSelected(optionSelected) {
@@ -731,6 +729,32 @@ function loc(desiredAnswer) {
   return { codeBlocks, codeBlocksCountString, codeBlocksListString };
 }
 
+function loc_untrimmed(desiredBlock) {
+  var desiredBlockList = desiredBlock.split("\n");
+
+  var codeBlocks = [];
+
+  var codeLineIndices = [];
+
+  for (let i = 0; i < desiredBlockList?.length; i++) {
+    if (desiredBlockList[i].includes("```")) {
+      codeLineIndices.push(i);
+    }
+  }
+
+  let clIds = [...new Set(codeLineIndices)];
+
+  if (clIds.length % 2 === 0) {
+    for (let x = 0; x < clIds.length - 1; x += 2) {
+      codeBlocks.push(desiredBlockList.slice(clIds[x], clIds[x + 1] + 1));
+    }
+  } else {
+    console.log("ERROR: Odd number of code snippet markdowns !");
+  }
+
+  return { codeBlocksUntrimmed: codeBlocks };
+}
+
 // working
 function languageCheck(desiredQuestionBlock, codeBlocksList) {
   var pattern;
@@ -1108,6 +1132,10 @@ function dotDotDotPresent(codeBlocksAnswer) {
 }
 
 function hasBackTicks(desiredBlock, codeBlocksList) {
+  // console.log({ desiredBlock: desiredBlock.split("\n") });
+
+  var lines = [];
+
   var codeLess = desiredBlock.split("\n");
 
   for (let i = 0; i < codeBlocksList?.length; i++) {
@@ -1122,15 +1150,17 @@ function hasBackTicks(desiredBlock, codeBlocksList) {
     }
   }
 
-  for (var i = 0; i < codeLess?.length; i++) {
+  // console.log({ codeLess });
+
+  for (var i = 0; i < codeLess.length; i++) {
     for (var j = 0; j < codeLess[i].length; j++) {
       if (codeLess[i][j] === "`") {
-        return 1;
+        lines.push(codeLess[i]);
       }
     }
   }
 
-  return 0;
+  return { lines: [...new Set(lines)] };
 }
 
 function runChecks() {
@@ -1141,6 +1171,9 @@ function runChecks() {
   document.getElementById("non_ascii_characters").innerHTML = "";
   document.getElementById("non_ascii_characters_container").style.display =
     "none";
+
+  document.getElementById("backticks_list").innerHTML = "";
+  document.getElementById("backticks_list_container").style.display = "none";
 
   document.getElementById("no_error_line").style.display = "block";
   if (desiredSofQuestion?.trim() === "" || desiredSofAnswer?.trim() === "") {
@@ -1156,6 +1189,14 @@ function runChecks() {
 
   var { codeBlocks } = loc(desiredSofQuestion);
   let codeBlocksQuestion = codeBlocks;
+
+  var { codeBlocksUntrimmed } = loc_untrimmed(desiredSofAnswer);
+  let codeBlocksAnswerUntrimmed = codeBlocksUntrimmed;
+
+  var { codeBlocksUntrimmed } = loc_untrimmed(desiredSofQuestion);
+  let codeBlocksQuestionUntrimmed = codeBlocksUntrimmed;
+
+  console.log(hasBackTicks(desiredSofAnswer, codeBlocksAnswerUntrimmed));
 
   const tryCatchArr = tryCatch(codeBlocksAnswer);
   for (let i = 0; i < tryCatchArr?.length; i++) {
@@ -1178,10 +1219,11 @@ function runChecks() {
       ? 1
       : 0,
     "Markdown Correct in the question": markdownCheck(desiredSofQuestion),
-    "Backticks present in the question": hasBackTicks(
-      desiredSofQuestion,
-      codeBlocksQuestion
-    ),
+    "Backticks present in the question":
+      hasBackTicks(desiredSofQuestion, codeBlocksQuestionUntrimmed)?.lines
+        ?.length === 0
+        ? 0
+        : 1,
     "Language keyword present in Question":
       languageCheck(desiredSofQuestion, codeBlocksQuestion)?.length === 0
         ? 1
@@ -1198,10 +1240,11 @@ function runChecks() {
       hasNonAsciiCharacters(desiredSofAnswer)?.chars?.length === 0 ? 0 : 1,
     "Answer ends with illegal characters (```, >>>, empty space)":
       codeEndsWith(desiredSofAnswer),
-    "Backticks present in the answer": hasBackTicks(
-      desiredSofAnswer,
-      codeBlocksAnswer
-    ),
+    "Backticks present in the answer":
+      hasBackTicks(desiredSofAnswer, codeBlocksAnswerUntrimmed)?.lines
+        ?.length === 0
+        ? 0
+        : 1,
     "Output inside Markdown in Answer": outputInsideMarkdown(
       desiredSofAnswer,
       codeBlocksAnswer
@@ -1257,6 +1300,56 @@ function runChecks() {
   showSuccessAlert(`Error percentage is : ${errorPercentage}%`);
 
   if (errorPercentage !== 0) {
+    // backticks in question detection
+    const backticksLineQuestion = hasBackTicks(
+      desiredSofQuestion,
+      codeBlocksQuestionUntrimmed
+    )?.lines;
+    if (backticksLineQuestion?.length !== 0) {
+      // insert heading in list for question errors
+      const errHeadingQuestion = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired question :";
+      errHeadingQuestion.appendChild(strongText);
+      document.getElementById("backticks_list").appendChild(errHeadingQuestion);
+      // list the error lines
+      backticksLineQuestion?.forEach((v) => {
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${v}"`;
+
+        document.getElementById("backticks_list").appendChild(listItem);
+      });
+
+      document.getElementById("backticks_list_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+
+    // backticks in answer detection
+    const backticksLineAnswer = hasBackTicks(
+      desiredSofAnswer,
+      codeBlocksAnswerUntrimmed
+    )?.lines;
+    if (backticksLineAnswer?.length !== 0) {
+      // insert heading in list for answer errors
+      const errHeadingAnswer = document.createElement("li");
+      const strongText = document.createElement("strong");
+      strongText.innerText = "Caught in desired answer :";
+      errHeadingAnswer.appendChild(strongText);
+      document.getElementById("backticks_list").appendChild(errHeadingAnswer);
+      // list the error lines
+      backticksLineAnswer?.forEach((v) => {
+        const listItem = document.createElement("li");
+        listItem.innerText = `"${v}"`;
+
+        document.getElementById("backticks_list").appendChild(listItem);
+      });
+
+      document.getElementById("backticks_list_container").style.display =
+        "block";
+      document.getElementById("no_error_line").style.display = "none";
+    }
+
     // i my we in question detection
     const errorLinesQuestion = i_my_we(
       desiredSofQuestion,
