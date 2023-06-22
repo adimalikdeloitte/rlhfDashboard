@@ -1196,8 +1196,6 @@ function runChecks() {
   var { codeBlocksUntrimmed } = loc_untrimmed(desiredSofQuestion);
   let codeBlocksQuestionUntrimmed = codeBlocksUntrimmed;
 
-  console.log(hasBackTicks(desiredSofAnswer, codeBlocksAnswerUntrimmed));
-
   const tryCatchArr = tryCatch(codeBlocksAnswer);
   for (let i = 0; i < tryCatchArr?.length; i++) {
     const element = tryCatchArr[i];
@@ -1507,5 +1505,44 @@ function toggleTheme() {
   } else {
     document.documentElement.removeAttribute("data-bs-theme");
     localStorage.setItem("theme", "light");
+  }
+}
+
+function checkUpdates() {
+  const updatedAnswer =
+    JSON.parse(questions)["Available Task categories"].answer;
+  const selectedAnswer = document.getElementById(
+    `infoRadio${Number(updatedAnswer) + 2}`
+  ).checked;
+
+  if (
+    desiredSofQuestion ===
+      document.getElementById("desiredSofQuestion").value &&
+    desiredSofAnswer === document.getElementById("desiredSofAnswer").value &&
+    selectedAnswer
+  ) {
+    location.reload();
+  }
+}
+
+function checkBeforeRunChecks() {
+  const updatedAnswer =
+    JSON.parse(questions)["Available Task categories"].answer;
+  const selectedAnswer = document.getElementById(
+    `infoRadio${Number(updatedAnswer) + 2}`
+  ).checked;
+  if (
+    desiredSofQuestion ===
+      document.getElementById("desiredSofQuestion").value &&
+    desiredSofAnswer === document.getElementById("desiredSofAnswer").value &&
+    selectedAnswer
+  ) {
+    runChecks();
+
+    setTimeout(() => {
+      var myModalEl = document.getElementById("runChecksWarningModalCenter");
+      var modal = bootstrap.Modal.getInstance(myModalEl); // Returns a Bootstrap modal instancea
+      modal.hide();
+    }, 500);
   }
 }
