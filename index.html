@@ -613,6 +613,68 @@
                   </label>
                 </div>
               </div>
+
+              <div class="mb-4">
+                Select a category :
+                <select id="categoryLanguage" class="m-3">
+                  <option>C#</option>
+                  <option>Python</option>
+                  <option>Java</option>
+                  <option>JavaScript</option>
+                  <option>TypeScript</option>
+                </select>
+                <select
+                  id="category"
+                  class="selectpicker"
+                  data-live-search="true"
+                >
+                  <option value=""></option>
+                </select>
+                <br />
+                or enter a category manually :
+                <input
+                  type="text"
+                  placeholder="Category Name"
+                  id="manuallyEnteredCategory"
+                /><button
+                  onclick="addCategory(`manual`)"
+                  style="
+                    border: 1px solid blue;
+                    border-radius: 5px;
+                    margin-left: 3px;
+                  "
+                >
+                  + Add
+                </button>
+                <br />
+                <br />
+                <span
+                  >Selected Categories: "<strong
+                    id="selectedCategories"
+                  ></strong
+                  >"</span
+                >
+                <button
+                  onclick="document.getElementById(`selectedCategories`).innerText=``"
+                  style="border: 1px solid red; border-radius: 5px"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <div class="mb-4">
+                Annotator Name :
+                <input
+                  type="text"
+                  id="annotatorName"
+                  placeholder="Annotator Name"
+                />
+              </div>
+
+              <div class="mb-4">
+                Time Taken :
+                <input type="text" id="timeTaken" placeholder="Time Taken" />
+              </div>
             </div>
 
             <div class="col-6">
@@ -1095,7 +1157,7 @@
 
       <br />
       <div style="text-align: center">
-        <strong style="opacity: 0.7">v2.1.0</strong>
+        <strong style="opacity: 0.7">v2.3.0</strong>
       </div>
 
       <br />
@@ -1103,9 +1165,11 @@
     </div>
 
     <!-- Section 2 : Main Body end -->
-
-    <script src="renderer.js"></script>
-
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+      crossorigin="anonymous"
+    ></script>
     <script
       src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js"
       integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE"
@@ -1116,12 +1180,7 @@
       integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ"
       crossorigin="anonymous"
     ></script>
-    <script
-      src="https://code.jquery.com/jquery-3.6.4.min.js"
-      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
-      crossorigin="anonymous"
-    ></script>
-
     <script src="https://cdn.jsdelivr.net/npm/@grammarly/editor-sdk?clientId=client_X56RR7GhychN7xzHB5Err1"></script>
+    <script src="renderer.js"></script>
   </body>
 </html>

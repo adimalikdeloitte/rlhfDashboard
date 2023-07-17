@@ -88,6 +88,7 @@ let info,
   sofDesiredQuestion,
   sofDesiredAnswer,
   annotatorEmail = localStorage.getItem("annotatorEmail") || "",
+  annotatorName = localStorage.getItem("annotatorName") || "",
   podNumber = localStorage.getItem("podNumber") || "",
   totalWarnings = 0;
 
@@ -281,6 +282,30 @@ function workOnSOF(data) {
   } else if (questionsJson[`Available Task categories`].answer == "5") {
     document.getElementById("infoRadio7").checked = true;
   }
+
+  document.getElementById("selectedCategories").innerText =
+    questionsJson["SOF Category"];
+
+  document.getElementById("timeTaken").value =
+    questionsJson["Time taken to annotate (in mins)"];
+
+  // selecting category based on language choice
+  const languageOptions = document.getElementById("categoryLanguage").options;
+  for (var i = 0; i < languageOptions.length; i++) {
+    var option = languageOptions[i];
+    if (option.value === languageChoice) {
+      option.setAttribute("selected", true);
+    }
+  }
+
+  const options = categoryLanguageObject[languageChoice];
+  document.getElementById("category").innerHTML = "";
+  options.forEach((option) => {
+    const optionItem = document.createElement("option");
+    optionItem.value = option;
+    optionItem.innerText = option;
+    document.getElementById("category").appendChild(optionItem);
+  });
 }
 
 ipcRenderer.on("file-data", (event, data) => {
@@ -292,6 +317,8 @@ ipcRenderer.on("file-data", (event, data) => {
 
   localStorage.setItem("annotatorEmail", annotatorEmail);
   localStorage.setItem("podNumber", podNumber);
+
+  document.getElementById("annotatorName").value = annotatorName;
 
   let tempLang = localStorage.getItem("languageChoice")?.toLowerCase();
   tempLang !== "javascript" ? (tempLang += "-programming") : tempLang;
@@ -490,6 +517,18 @@ function submitAdditionalInfo() {
   } else if (document.getElementById("infoRadio7").checked) {
     questionsJson[`Available Task categories`].answer = "5";
   }
+
+  questionsJson["Annotator Name"] =
+    document.getElementById("annotatorName").value;
+  questionsJson["Time taken to annotate (in mins)"] =
+    document.getElementById("timeTaken").value;
+  questionsJson["SOF Category"] =
+    document.getElementById("selectedCategories").innerText;
+
+  localStorage.setItem(
+    "annotatorName",
+    document.getElementById("annotatorName").value
+  );
 
   let revisedQuestions = JSON.stringify(questionsJson, null, 4);
   questions = revisedQuestions;
@@ -761,7 +800,7 @@ function languageCheck(desiredQuestionBlock, codeBlocksList) {
 
   if (languageChoice === "Python") {
     pattern =
-      /\b(Python|Django|Flask|Bottle|Web2py|CherryPy|Dash|Falcon|Growler|UvLoop|Sanic|PyramidCubicWeb|TurboGears|Hug|MorePath)\b/i;
+      /\b(Python|Django|Flask|Bottle|Web2py|CherryPy|Dash|Falcon|Growler|UvLoop|Sanic|PyramidCubicWeb|TurboGears|Hug|MorePath|PySpark)\b/i;
   } else if (languageChoice === "Java") {
     pattern = /\b(Java|JavaFX)\b/i;
   } else if (languageChoice === "JavaScript") {
@@ -1546,3 +1585,200 @@ function checkBeforeRunChecks() {
     }, 500);
   }
 }
+
+const categoryLanguageObject = {
+  "C#": [
+    "-",
+    "Type Conversion",
+    "List Indexing",
+    "Dictionary",
+    "IDE Plugin",
+    "IDE Settings",
+    "IDE Library Installation",
+    "IDE library not loading",
+    "IDE Code Formatting",
+    "String Manipulation",
+    "Read and Write Files.",
+    "Uploading and Downloading Files",
+    "Updating CSVs / Excel Sheet",
+    "Update json",
+    "Certificate",
+    "Web API",
+    "Web Config",
+    "Object Serialization",
+    "Class",
+    "Interface",
+    "CSharp Syntax",
+    "Regex or unicode",
+    "MVC",
+    "Internal Server Error",
+    "CSharp Version Changes",
+    "Logical Error",
+    "Database",
+    "Package",
+    "Accessing and Updating S3",
+    "Lambda",
+    "Enum",
+    "Bitwise operation",
+    "Overloading",
+    "DateTime",
+    "For loop",
+    "If loop",
+  ],
+  TypeScript: [
+    "-",
+    "angular",
+    "javascript",
+    "reactjs",
+    "node.js",
+    "html",
+    "Arrays",
+    "rxjs",
+    "ionic",
+    "ecmascript-6",
+    "visual-studio-code",
+    "generics",
+    "css",
+    "json",
+    "firebase",
+    "vue.js",
+    "jquery",
+    "enums",
+    "interface",
+    "tslint",
+    "observable",
+    "nestjs",
+    "webpack",
+    "jestjs",
+    "express",
+    "regex",
+    "inheritance",
+    "unit-testing",
+    "eslint",
+    "momentjs",
+    "Npm commands",
+  ],
+  Java: [
+    "-",
+    "android",
+    "string operations",
+    "spring boot",
+    "lambda",
+    "closures",
+    "swing related",
+    "array operation",
+    "regex",
+    "eclipse",
+    "generics",
+    "collections",
+    "multithreading",
+    "multi-processing",
+    "javafx",
+    "java-stream",
+    "maven",
+    "spring-mvc",
+    "junit",
+    "hibernate",
+    "servlets",
+    "datetime",
+    "list operation",
+  ],
+  JavaScript: [
+    "-",
+    "css",
+    "angularjs",
+    "regex",
+    "reactjs",
+    "ajax",
+    "php",
+    "google-chrome",
+    "angular",
+    "date",
+    "vue.js",
+    "asp.net",
+    "express",
+    "d3.js",
+    "iframe",
+    "backbone.js",
+    "svg",
+    "momentjs",
+    "google-chrome-extension",
+    "validation",
+    "mongodb",
+    "sorting",
+    "math",
+    "android",
+    "firebase",
+    "ios",
+    "npm",
+    "redux",
+    "electron",
+    "foreach",
+    "timezone",
+  ],
+  Python: [
+    "-",
+    "django",
+    "numpy",
+    "list",
+    "regex",
+    "sqlalchemy",
+    "tkinter",
+    "csv",
+    "ipython",
+    "tensorflow",
+    "sorting",
+    "tuples",
+    "beautifulsoup",
+    "subprocess",
+    "postgresql",
+    "amazon-web-services",
+    "mongodb",
+    "scrapy",
+    "oop",
+    "nlp",
+  ],
+};
+
+document.getElementById("categoryLanguage").addEventListener("click", () => {
+  const value = document.getElementById("categoryLanguage").value;
+  const options = categoryLanguageObject[value];
+  document.getElementById("category").innerHTML = "";
+  options.forEach((option) => {
+    const optionItem = document.createElement("option");
+    optionItem.value = option;
+    optionItem.innerText = option;
+    document.getElementById("category").appendChild(optionItem);
+  });
+});
+
+// Get the select element
+var selectElement = document.getElementById("category");
+
+function addCategory(selectedValue) {
+  if (selectedValue !== "-") {
+    if (selectedValue === "manual") {
+      selectedValue = document.getElementById(`manuallyEnteredCategory`).value;
+    }
+    document.getElementById(`manuallyEnteredCategory`).value = ``;
+    let selectedOptions =
+      document.getElementById("selectedCategories").innerText;
+    selectedOptions = selectedOptions.split(",");
+    if (!selectedOptions.includes(selectedValue)) {
+      selectedOptions.push(selectedValue);
+      selectedOptions = selectedOptions.filter((e) => {
+        return e !== "";
+      });
+      selectedOptions = selectedOptions.join(",");
+      selectedOptions.toLowerCase();
+      document.getElementById("selectedCategories").innerText = selectedOptions;
+    }
+  }
+}
+
+// Attach an event listener to the select element
+selectElement.addEventListener("change", function (event) {
+  // Event handling code goes here
+  var selectedValue = event.target.value;
+  addCategory(selectedValue);
+});

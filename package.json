@@ -1,6 +1,6 @@
 {
   "name": "rlhfdashboard",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "description": "RLHF Dashboard with beautiful UI in JS",
   "main": "main.js",
   "scripts": {

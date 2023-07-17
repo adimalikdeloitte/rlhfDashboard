@@ -97,7 +97,6 @@ function createWindow() {
   }
 
   ipcMain.on("writeLogs", (event, data) => {
-    console.log(data);
     const today = new Date();
     const filePath =
       `C:\\Users\\${
