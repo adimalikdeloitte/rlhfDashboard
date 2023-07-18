@@ -1,6 +1,6 @@
 {
   "name": "rlhfdashboard",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "RLHF Dashboard with beautiful UI in JS",
   "main": "main.js",
   "scripts": {
@@ -29,8 +29,5 @@
   "devDependencies": {
     "electron": "^24.2.0",
     "electron-builder": "^23.6.0"
-  },
-  "dependencies": {
-    "electron-log": "^4.4.8"
   }
 }

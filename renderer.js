@@ -518,12 +518,19 @@ function submitAdditionalInfo() {
     questionsJson[`Available Task categories`].answer = "5";
   }
 
-  questionsJson["Annotator Name"] =
-    document.getElementById("annotatorName").value;
-  questionsJson["Time taken to annotate (in mins)"] =
-    document.getElementById("timeTaken").value;
-  questionsJson["SOF Category"] =
-    document.getElementById("selectedCategories").innerText;
+  // update only if present
+  if ("Annotator Name" in questionsJson) {
+    questionsJson["Annotator Name"] =
+      document.getElementById("annotatorName").value;
+  }
+  if ("Time taken to annotate (in mins)" in questionsJson) {
+    questionsJson["Time taken to annotate (in mins)"] =
+      document.getElementById("timeTaken").value;
+  }
+  if ("SOF Category" in questionsJson) {
+    questionsJson["SOF Category"] =
+      document.getElementById("selectedCategories").innerText;
+  }
 
   localStorage.setItem(
     "annotatorName",
@@ -663,34 +670,65 @@ function i_my_we(desiredBlock, codeBlocksList) {
 
 // working
 function answerInsideAdditionalInformationBlock(additionalInfo) {
-  var listAdditionalInfo = additionalInfo.split("\n");
-  var answerList = [];
+  const jsonAdditionalInfo = JSON.parse(additionalInfo);
 
-  for (var i = 0; i < listAdditionalInfo?.length; i++) {
-    var iteration = listAdditionalInfo[i];
+  let flag = 0;
+  let errorLinesAdditionalInfo = [];
 
-    if (iteration.includes("answer")) {
-      if (iteration[iteration.length - 2].match(/\d+/)) {
-        answerList.push(iteration[iteration.length - 2]);
-      }
-    }
+  if (jsonAdditionalInfo["Annotator Name"] === "") {
+    flag = 1;
+    errorLinesAdditionalInfo.push("Annotator Name not present !");
   }
 
-  if (answerList.length === 2) {
-    if (
-      parseInt(answerList[1]) === 1 ||
-      parseInt(answerList[1]) === 2 ||
-      parseInt(answerList[1]) === 3 ||
-      parseInt(answerList[1]) === 4 ||
-      parseInt(answerList[1]) === 5
-    ) {
-      return 0;
-    } else {
-      return 1;
-    }
-  } else {
-    return 1;
+  if (jsonAdditionalInfo["Available Task categories"].answer === "") {
+    flag = 1;
+    errorLinesAdditionalInfo.push("Task Category not selected !");
   }
+
+  if (
+    jsonAdditionalInfo["Do you want to reject this annotation"].answer === ""
+  ) {
+    flag = 1;
+    errorLinesAdditionalInfo.push(
+      "Annotation rejection / acceptance not marked!"
+    );
+  }
+
+  if (jsonAdditionalInfo["SOF Category"] === "") {
+    flag = 1;
+    errorLinesAdditionalInfo.push("SOF category not marked!");
+  }
+
+  if (jsonAdditionalInfo["Time taken to annotate (in mins)"] === "") {
+    flag = 1;
+    errorLinesAdditionalInfo.push("Time taken not marked!");
+  }
+
+  if (flag === 1) {
+    // insert heading in list for answer errors
+    const errHeadingAnswer = document.createElement("li");
+    const strongText = document.createElement("strong");
+    strongText.innerText = "Caught in desired answer :";
+    errHeadingAnswer.appendChild(strongText);
+    document
+      .getElementById("additional_info_error_list")
+      .appendChild(errHeadingAnswer);
+    for (let x = 0; x < errorLinesAdditionalInfo.length; x++) {
+      const line = errorLinesAdditionalInfo[x];
+
+      const listItem = document.createElement("li");
+      listItem.innerText = `"${line}"`;
+
+      document
+        .getElementById("additional_info_error_list")
+        .appendChild(listItem);
+    }
+    document.getElementById("additional_info_error_container").style.display =
+      "block";
+    document.getElementById("no_error_line").style.display = "none";
+  }
+
+  return flag;
 }
 
 // working
@@ -1211,12 +1249,16 @@ function runChecks() {
   document.getElementById("non_ascii_characters_container").style.display =
     "none";
 
+  document.getElementById("additional_info_error_list").innerHTML = "";
+  document.getElementById("additional_info_error_container").style.display =
+    "none";
+
   document.getElementById("backticks_list").innerHTML = "";
   document.getElementById("backticks_list_container").style.display = "none";
 
   document.getElementById("no_error_line").style.display = "block";
   if (desiredSofQuestion?.trim() === "" || desiredSofAnswer?.trim() === "") {
-    showSuccessAlert("Please fill desired question and answer !");
+    showFailAlert("Please fill desired question and answer !");
     return;
   }
 
@@ -1334,7 +1376,11 @@ function runChecks() {
   ipcRenderer.send("writeLogs", [someData]);
   // }
 
-  showSuccessAlert(`Error percentage is : ${errorPercentage}%`);
+  if (errorPercentage === 0) {
+    showSuccessAlert(`Error percentage is : ${errorPercentage}%`);
+  } else {
+    showFailAlert(`Error percentage is : ${errorPercentage}%`);
+  }
 
   if (errorPercentage !== 0) {
     // backticks in question detection
@@ -1505,6 +1551,26 @@ function showSuccessAlert(message) {
     if (successAlert) {
       successAlert.classList.remove("show");
       successAlert.classList.add("fade");
+    }
+  }, 3000);
+}
+
+function showFailAlert(message) {
+  const alertHTML = `
+      <div id="failAlert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        ${message}
+      </div>
+    `;
+
+  const alertContainer = document.getElementById("alertContainer");
+  alertContainer.innerHTML = "";
+  alertContainer.insertAdjacentHTML("beforeend", alertHTML);
+
+  setTimeout(function () {
+    const failAlert = document.getElementById("failAlert");
+    if (failAlert) {
+      failAlert.classList.remove("show");
+      failAlert.classList.add("fade");
     }
   }, 3000);
 }

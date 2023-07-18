@@ -6,7 +6,6 @@ const {
   nativeTheme,
 } = require("electron");
 const fs = require("fs");
-const log = require("electron-log");
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -126,10 +125,8 @@ function createWindow() {
     fs.appendFile(filePath, csvContent, "utf8", (err) => {
       if (err) {
         console.error("Error creating CSV file:", err);
-        log.error(err);
       } else {
         console.log("CSV file created successfully.");
-        log.info("CSV file created successfully.");
       }
     });
   });
